@@ -1,4 +1,4 @@
-📚 BookBazaar - Flutter Book Store App
+📚 BookMatch - Flutter Book Store App
 
 BookBazaar is a cross-platform mobile app built with Flutter that allows users to explore a wide collection of books, add them to a cart, leave reviews, and manage their profiles through a secure sign-in system. Whether you're a casual reader or a frequent buyer, this app brings a smooth and intuitive shopping experience.
 
