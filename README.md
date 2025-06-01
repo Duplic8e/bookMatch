@@ -36,8 +36,6 @@ Prerequisites:
 
 2. Clone Your Fork locally
 
-- git clone https://github.com/your-username/bookbazaar.git
-- cd bookbazaar
 
 3. Create a Branch
 
