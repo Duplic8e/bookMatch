@@ -1,6 +1,6 @@
 name: Flutter CI
 
-# Run on pushes or PRs to main
+# Trigger on pushes or PRs to main
 on:
   push:
     branches: [ main ]
@@ -28,7 +28,7 @@ jobs:
       - name: flutter analyze
         run: flutter analyze
 
-      # 5. Run tests
+      # 5. Run tests (with coverage)
       - name: flutter test
         run: flutter test --coverage
 
@@ -36,11 +36,12 @@ jobs:
       - name: flutter build apk
         run: flutter build apk --release
 
-      # 7. Upload artifacts to GitHub
+      # 7. Upload APK & coverage report (now using v4)
       - name: Upload APK & coverage
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: app-release
           path: |
             build/app/outputs/flutter-apk/app-release.apk
             coverage/lcov.info
+          # retention-days: 5   # optional: how long to keep artifacts
