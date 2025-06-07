@@ -91,7 +91,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 TextFormField(
                   key: const ValueKey('password_signin'),
                   validator: (value) {
-                    if (value == null || value.isEmpty || value.length < 7) {
+                    if (value == null || value.isEmpty || value.length < 6) {
                       return 'Password must be at least 7 characters long.';
                     }
                     return null;
