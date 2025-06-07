@@ -1,0 +1,46 @@
+name: Flutter CI
+
+# Run on pushes or PRs to main
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  analyze_test_build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout your code
+      - uses: actions/checkout@v3
+
+      # 2. Install Flutter (stable channel)
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+
+      # 3. Install dependencies
+      - name: pub get
+        run: flutter pub get
+
+      # 4. Static analysis
+      - name: flutter analyze
+        run: flutter analyze
+
+      # 5. Run tests
+      - name: flutter test
+        run: flutter test --coverage
+
+      # 6. Build Android APK
+      - name: flutter build apk
+        run: flutter build apk --release
+
+      # 7. Upload artifacts to GitHub
+      - name: Upload APK & coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            coverage/lcov.info
