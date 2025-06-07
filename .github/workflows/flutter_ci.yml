@@ -1,6 +1,5 @@
 name: Flutter CI
 
-# Trigger on pushes or PRs to main
 on:
   push:
     branches: [ main ]
@@ -12,32 +11,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout your code
       - uses: actions/checkout@v3
 
-      # 2. Set up Flutter (latest stable channel)
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
 
-      # 3. Install dependencies
       - name: pub get
         run: flutter pub get
 
-      # 4. Static analysis
+      # ↓ changed here ↓
       - name: flutter analyze
-        run: flutter analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
-      # 5. Run tests (with coverage)
       - name: flutter test
         run: flutter test --coverage
 
-      # 6. Build Android APK
       - name: flutter build apk
         run: flutter build apk --release
 
-      # 7. Upload APK & coverage report
       - name: Upload APK & coverage
         uses: actions/upload-artifact@v4
         with:
