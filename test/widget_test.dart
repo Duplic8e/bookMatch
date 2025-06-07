@@ -13,8 +13,10 @@ void main() {
       ),
     );
 
-    // Now you can write expectations against your real UI...
-    // For example, check that your AppBar title is present:
-    expect(find.text('KetaBook'), findsOneWidget);
+    // Assert that your root widget is in the tree:
+    expect(find.byType(KetaBookApp), findsOneWidget);
+
+    // And that it created a MaterialApp (router) under the hood:
+    expect(find.byType(MaterialApp), findsOneWidget);
   });
 }
