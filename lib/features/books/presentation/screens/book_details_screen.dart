@@ -28,7 +28,7 @@ class BookDetailScreen extends ConsumerWidget {
             return const Center(child: Text('Book not found.'));
           }
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 80), // Add padding for floating button
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -75,8 +75,7 @@ class BookDetailScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 24),
-                // Use the pdfUrl for the preview button
-                LookInsideButton(bookId: book.id, previewUrl: book.pdfUrl),
+                LookInsideButton(bookId: book.id, previewUrl: book.pdfUrl, title: book.title),
                 const SizedBox(height: 24),
                 Text('Description', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
@@ -102,6 +101,21 @@ class BookDetailScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Failed to load book details: $err')),
       ),
+      // ** ADDED FLOATING ACTION BUTTON **
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          // TODO: Implement actual add to cart logic
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${bookAsyncValue.value?.title ?? "Book"} added to cart!'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        },
+        label: const Text('Add to Cart'),
+        icon: const Icon(Icons.add_shopping_cart),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_app_project_bookstore/features/auth/presentation/providers/auth_providers.dart';
 import 'package:mobile_app_project_bookstore/features/books/presentation/providers/book_providers.dart';
-import 'package:mobile_app_project_bookstore/features/books/domain/entities/book.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -11,30 +10,17 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authNotifier = ref.read(authNotifierProvider.notifier);
-    final authState = ref.watch(authNotifierProvider);
-
-    ref.listen<AuthScreenState>(authNotifierProvider, (previous, next) {
-      final currentRoute = ModalRoute.of(context);
-      if (next.user == null && previous?.user != null && currentRoute != null && currentRoute.isCurrent) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (ModalRoute.of(context)?.isCurrent == true) {
-            context.goNamed('signin');
-          }
-        });
-      }
-    });
-
     final booksAsyncValue = ref.watch(allBooksProvider);
-    final userEmail = authState.user?.email ?? "Loading...";
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('KetaBook Home'),
+        title: const Text('KetaBook'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.person),
+            icon: const Icon(Icons.shopping_cart_outlined),
             onPressed: () {
-              context.goNamed('profile');
+              // Navigate to the top-level cart screen
+              context.goNamed('cart');
             },
           ),
           IconButton(
@@ -89,7 +75,11 @@ class HomeScreen extends ConsumerWidget {
                 child: InkWell(
                   onTap: () {
                     if (book.id.isNotEmpty) {
-                      context.go('/books/${book.id}');
+                      // ** FIX: Use goNamed for sub-routes **
+                      context.goNamed(
+                        'bookDetails',
+                        pathParameters: {'bookId': book.id},
+                      );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Error: Book ID is missing.')),
@@ -132,7 +122,7 @@ class HomeScreen extends ConsumerWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                book.authors.join(', '), // Updated
+                                book.authors.join(', '),
                                 style: Theme.of(context).textTheme.bodySmall,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
