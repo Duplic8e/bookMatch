@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile_app_project_bookstore/features/books/domain/entities/book.dart';
 import 'package:mobile_app_project_bookstore/features/books/presentation/providers/book_providers.dart';
 import 'package:mobile_app_project_bookstore/features/books/presentation/widgets/look_inside_button.dart';
 import 'package:mobile_app_project_bookstore/features/books/presentation/widgets/review_list.dart';
 import 'package:mobile_app_project_bookstore/features/books/presentation/widgets/submit_review_form.dart';
+import 'package:mobile_app_project_bookstore/features/cart/presentation/providers/cart_provider.dart';
 
 class BookDetailScreen extends ConsumerWidget {
   final String bookId;
@@ -13,33 +15,30 @@ class BookDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bookAsyncValue = ref.watch(bookDetailProvider(bookId));
+    final book = bookAsyncValue.value;
 
     return Scaffold(
       appBar: AppBar(
-        title: bookAsyncValue.when(
-          data: (book) => Text(book?.title ?? 'Book Detail'),
-          loading: () => const Text('Loading...'),
-          error: (err, stack) => const Text('Error'),
-        ),
+        title: Text(book?.title ?? 'Book Detail'),
       ),
       body: bookAsyncValue.when(
-        data: (book) {
-          if (book == null) {
+        data: (bookData) {
+          if (bookData == null) {
             return const Center(child: Text('Book not found.'));
           }
           return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 80), // Add padding for floating button
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100), // More padding for button
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (book.coverImageUrl.isNotEmpty)
+                    if (bookData.coverImageUrl.isNotEmpty)
                       Hero(
-                        tag: 'bookCover-${book.id}',
+                        tag: 'bookCover-${bookData.id}',
                         child: Image.network(
-                          book.coverImageUrl,
+                          bookData.coverImageUrl,
                           height: 180,
                           width: 120,
                           fit: BoxFit.cover,
@@ -52,48 +51,48 @@ class BookDetailScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(book.title, style: Theme.of(context).textTheme.headlineSmall),
+                          Text(bookData.title, style: Theme.of(context).textTheme.headlineSmall),
                           const SizedBox(height: 4),
-                          Text('by ${book.authors.join(", ")}', style: Theme.of(context).textTheme.titleMedium),
+                          Text('by ${bookData.authors.join(", ")}', style: Theme.of(context).textTheme.titleMedium),
                           const SizedBox(height: 8),
                           Row(
                             children: [
                               const Icon(Icons.star, color: Colors.amber, size: 20),
                               const SizedBox(width: 4),
-                              Text(book.averageRating.toStringAsFixed(1), style: Theme.of(context).textTheme.titleSmall),
+                              Text(bookData.averageRating.toStringAsFixed(1), style: Theme.of(context).textTheme.titleSmall),
                               const SizedBox(width: 8),
                               Flexible(
-                                child: Text('(${book.categories.join(", ")})', style: Theme.of(context).textTheme.bodySmall, overflow: TextOverflow.ellipsis),
+                                child: Text('(${bookData.categories.join(", ")})', style: Theme.of(context).textTheme.bodySmall, overflow: TextOverflow.ellipsis),
                               ),
                             ],
                           ),
                           const SizedBox(height: 8),
-                          Text('Published: ${book.publishedYear} • ${book.pageCount} pages', style: Theme.of(context).textTheme.bodySmall),
+                          Text('Published: ${bookData.publishedYear} • ${bookData.pageCount} pages', style: Theme.of(context).textTheme.bodySmall),
                         ],
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
-                LookInsideButton(bookId: book.id, previewUrl: book.pdfUrl, title: book.title),
+                LookInsideButton(bookId: bookData.id, previewUrl: bookData.pdfUrl, title: bookData.title),
                 const SizedBox(height: 24),
                 Text('Description', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
-                Text(book.description, style: Theme.of(context).textTheme.bodyMedium),
+                Text(bookData.description, style: Theme.of(context).textTheme.bodyMedium),
                 const SizedBox(height: 16),
-                if (book.tags.isNotEmpty)
+                if (bookData.tags.isNotEmpty)
                   Wrap(
                     spacing: 8.0,
                     runSpacing: 4.0,
-                    children: book.tags.map((tag) => Chip(label: Text(tag))).toList(),
+                    children: bookData.tags.map((tag) => Chip(label: Text(tag))).toList(),
                   ),
                 const SizedBox(height: 24),
                 const Divider(),
                 const SizedBox(height: 16),
-                Text('Reviews (${book.ratingsCount})', style: Theme.of(context).textTheme.titleLarge),
-                ReviewList(bookId: book.id),
+                Text('Reviews (${bookData.ratingsCount})', style: Theme.of(context).textTheme.titleLarge),
+                ReviewList(bookId: bookData.id),
                 const SizedBox(height: 16),
-                SubmitReviewForm(bookId: book.id),
+                SubmitReviewForm(bookId: bookData.id),
               ],
             ),
           );
@@ -101,20 +100,22 @@ class BookDetailScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Failed to load book details: $err')),
       ),
-      // ** ADDED FLOATING ACTION BUTTON **
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: book != null
+          ? FloatingActionButton.extended(
         onPressed: () {
-          // TODO: Implement actual add to cart logic
+          // ** LOGIC TO ADD TO CART **
+          ref.read(cartProvider.notifier).addToCart(book);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${bookAsyncValue.value?.title ?? "Book"} added to cart!'),
+              content: Text('${book.title} added to cart!'),
               duration: const Duration(seconds: 2),
             ),
           );
         },
         label: const Text('Add to Cart'),
         icon: const Icon(Icons.add_shopping_cart),
-      ),
+      )
+          : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
