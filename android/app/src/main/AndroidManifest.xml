@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="bookmatch"
+        android:label="mobile_app_project_bookstore"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
