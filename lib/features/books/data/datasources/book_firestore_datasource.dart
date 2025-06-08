@@ -1,9 +1,6 @@
-// lib/features/books/data/datasources/book_firestore_datasource.dart
-//mplementation for fetching book data from Firestore.
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mobile_app_project_bookstore/features/books/data/models/book_model.dart';
-import 'package:mobile_app_project_bookstore/features/books/data/models/review_model.dart'; // Assuming ReviewModel
+import 'package:mobile_app_project_bookstore/features/books/data/models/review_model.dart';
 
 class BookFirestoreDataSource {
   final FirebaseFirestore _firestore;
@@ -22,37 +19,61 @@ class BookFirestoreDataSource {
     final querySnapshot = await _firestore
         .collection('books')
         .doc(bookId)
-        .collection('reviews')
+        .collection('reviews') // Assuming 'reviews' is a sub-collection
         .orderBy('timestamp', descending: true)
         .get();
+
     return querySnapshot.docs
-        .map((doc) => ReviewModel.fromFirestore(doc as DocumentSnapshot<Map<String, dynamic>>))
+        .map((doc) => ReviewModel.fromFirestore(doc))
         .toList();
   }
 
+  /// Submits a review and atomically updates the book's average rating.
   Future<void> submitReview(String bookId, ReviewModel review) async {
-    await _firestore
-        .collection('books')
-        .doc(bookId)
-        .collection('reviews')
-        .add(review.toFirestore());
+    final bookRef = _firestore.collection('books').doc(bookId);
+    final reviewRef = bookRef.collection('reviews').doc(); // New review document
+
+    return _firestore.runTransaction((transaction) async {
+      // 1. Get the current book document
+      final bookSnapshot = await transaction.get(bookRef);
+
+      if (!bookSnapshot.exists) {
+        throw Exception("Book does not exist!");
+      }
+
+      // 2. Calculate the new average rating and count
+      final oldRatingCount = bookSnapshot.data()?['ratingsCount'] ?? 0;
+      final oldAverageRating = (bookSnapshot.data()?['averageRating'] as num?)?.toDouble() ?? 0.0;
+
+      final newRatingCount = oldRatingCount + 1;
+      // Formula to calculate new average: ((old_avg * old_count) + new_rating) / new_count
+      final newAverageRating =
+          ((oldAverageRating * oldRatingCount) + review.rating) / newRatingCount;
+
+      // 3. Set the new review document in the sub-collection
+      transaction.set(reviewRef, review.toFirestore());
+
+      // 4. Update the parent book document with the new rating values
+      transaction.update(bookRef, {
+        'ratingsCount': newRatingCount,
+        'averageRating': newAverageRating,
+      });
+    });
   }
 
-  // **** ENSURE THIS METHOD IS PRESENT AND CORRECT ****
   Future<List<BookModel>> getAllBooks() async {
     try {
       final querySnapshot = await _firestore
           .collection('books')
-          // .orderBy('title') // Optional: order by a field
-          .limit(20) // Optional: limit the number of books fetched for performance
+          .limit(50) // Limit for performance
           .get();
 
       if (querySnapshot.docs.isEmpty) {
-        return []; // Return an empty list if no books are found
+        return [];
       }
 
       return querySnapshot.docs.map((doc) {
-        return BookModel.fromFirestore(doc as DocumentSnapshot<Map<String, dynamic>>);
+        return BookModel.fromFirestore(doc);
       }).toList();
     } catch (e) {
       print('Error fetching all books: $e');
