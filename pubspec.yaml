@@ -42,7 +42,7 @@ dependencies:
   hive: ^2.2.3            # Or the latest version
   hive_flutter: ^1.1.0    # Or the latest version
   path_provider: ^2.0.12   # Needed by Hive to find a place to store data
-  carousel_slider: ^4.0.0
+  carousel_slider: ^5.0.0
   # Image Picker
   image_picker: ^1.1.2    # Or the latest version
 
@@ -91,7 +91,6 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/img/
     - assets/fonts/
 
   # An image asset can refer to one or more resolution-specific "variants", see
