@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_app_project_bookstore/features/auth/presentation/providers/auth_providers.dart';
-// Corrected import paths based on our previous discussion
 import 'package:mobile_app_project_bookstore/features/auth/presentation/screens/sign_in_screen.dart';
 import 'package:mobile_app_project_bookstore/features/auth/presentation/screens/sign_up_screen.dart';
 import 'package:mobile_app_project_bookstore/features/auth/presentation/screens/profile_screen.dart'; // Assuming this file exists and ProfileScreen class is defined
 
 import 'package:mobile_app_project_bookstore/features/home/presentation/screens/home_screen.dart';
-import 'package:mobile_app_project_bookstore/features/books/screens/book_details_screen.dart';
+import 'package:mobile_app_project_bookstore/features/books/presentation/screens/book_details_screen.dart';
+import 'package:mobile_app_project_bookstore/features/books/presentation/screens/book_preview_screen.dart';
 
 // Placeholder for SplashScreen if not defined elsewhere
 // class SplashScreen extends StatelessWidget { // ORIGINAL
@@ -38,7 +38,6 @@ class SplashScreen extends StatelessWidget {
     );
   }
 }
-// --- END OF DEBUG MODIFICATION 1 ---
 
 
 GoRouter createRouter(WidgetRef ref) {
@@ -89,7 +88,6 @@ GoRouter createRouter(WidgetRef ref) {
         name: 'bookDetails',
         path: '/books/:bookId',
         builder: (context, state) {
-          print("DEBUG: Building /books/:bookId route"); // Debug print
           final bookId = state.pathParameters['bookId'];
           if (bookId == null) {
             return Scaffold(
@@ -97,7 +95,21 @@ GoRouter createRouter(WidgetRef ref) {
               body: const Center(child: Text("Book ID is missing.")),
             );
           }
-          return BookDetailsScreen(bookId: bookId);
+          return BookDetailScreen(bookId: bookId); // Should now be found
+        },
+      ),
+
+      GoRoute(
+        path: '/book-preview', // Or '/books/:bookId/preview' if it's tied to a specific book
+        name: 'bookPreview',
+        builder: (context, state) {
+          final args = state.extra as Map<String, dynamic>?;
+          final url = args?['url'] as String?;
+          final title = args?['title'] as String?;
+          if (url != null && title != null) {
+            return BookPreviewScreen(pdfUrl: url, bookTitle: title);
+          }
+          return const Scaffold(body: Center(child: Text("Preview not available")));
         },
       ),
     ],

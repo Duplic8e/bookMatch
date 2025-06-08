@@ -17,7 +17,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> { // ConsumerState
   final formKey = GlobalKey<FormState>();
 
   // Example: Local state for preferences - adapt as needed for your actual preferences UI
-  Set<String> _selectedPreferences = {}; // Example: use a more complex UI for this
+  final Set<String> _selectedPreferences = {}; // Example: use a more complex UI for this
 
   @override
   void dispose() {
