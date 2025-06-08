@@ -6,6 +6,7 @@ import 'package:mobile_app_project_bookstore/common/color_extension.dart';
 import 'package:mobile_app_project_bookstore/common_widgets/top_picks_cell.dart';
 import 'package:mobile_app_project_bookstore/common_widgets/best_seller_cell.dart';
 import 'package:mobile_app_project_bookstore/common_widgets/round_textfield.dart';
+import 'package:mobile_app_project_bookstore/features/books/screens/book_details_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -18,16 +19,17 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController txtName = TextEditingController();
   final TextEditingController txtEmail = TextEditingController();
 
+  // Mock data now includes an 'id' for navigation
   final List<Map<String, dynamic>> topPicksArr = [
-    {"name": "The Dissapearance of Emila Zola", "author": "Michael Rosen", "img": "assets/img/1.jpg"},
-    {"name": "Fatherhood",                      "author": "Marcus Berkmann", "img": "assets/img/2.jpg"},
-    {"name": "The Time Travellers Handbook",     "author": "Stride Lottie",   "img": "assets/img/3.jpg"},
+    {"id": "1", "name": "The Dissapearance of Emila Zola", "author": "Michael Rosen", "img": "assets/img/1.jpg"},
+    {"id": "2", "name": "Fatherhood", "author": "Marcus Berkmann", "img": "assets/img/2.jpg"},
+    {"id": "3", "name": "The Time Travellers Handbook", "author": "Stride Lottie", "img": "assets/img/3.jpg"},
   ];
 
   final List<Map<String, dynamic>> bestArr = [
-    {"name": "Fatherhood",              "author": "by Christopher Wilson", "img": "assets/img/4.jpg",  "rating": 5.0},
-    {"name": "In A Land Of Paper Gods", "author": "by Rebecca Mackenzie",    "img": "assets/img/5.jpg",  "rating": 4.0},
-    {"name": "Tattletale",              "author": "by Sarah J. Noughton",   "img": "assets/img/6.jpg",  "rating": 3.0},
+    {"id": "4", "name": "Fatherhood", "author": "by Christopher Wilson", "img": "assets/img/4.jpg", "rating": 5.0},
+    {"id": "5", "name": "In A Land Of Paper Gods", "author": "by Rebecca Mackenzie", "img": "assets/img/5.jpg", "rating": 4.0},
+    {"id": "6", "name": "Tattletale", "author": "by Sarah J. Noughton", "img": "assets/img/6.jpg", "rating": 3.0},
   ];
 
   final List<String> genres = ["Fiction", "Mystery", "Sci-Fi"];
@@ -35,7 +37,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context).size;
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -52,7 +53,6 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Reduced top padding
                 SizedBox(height: media.width * 0.1),
 
                 // Top Picks title
@@ -68,12 +68,25 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // Top Picks carousel
+                // Top Picks carousel with tap navigation
                 SizedBox(
                   height: media.width * 0.5,
                   child: CarouselSlider.builder(
                     itemCount: topPicksArr.length,
-                    itemBuilder: (context, index, _) => TopPicksCell(iObj: topPicksArr[index]),
+                    itemBuilder: (context, index, _) {
+                      final book = topPicksArr[index];
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => BookDetailsScreen(bookId: book['id']),
+                            ),
+                          );
+                        },
+                        child: TopPicksCell(iObj: book),
+                      );
+                    },
                     options: CarouselOptions(
                       autoPlay: false,
                       aspectRatio: 1,
@@ -86,10 +99,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // Smaller gap before next section
                 const SizedBox(height: 8),
 
-                // Global Bestsellers
+                // Global Bestsellers with tap
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
@@ -107,11 +119,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
                     itemCount: bestArr.length,
-                    itemBuilder: (context, index) => BestSellerCell(bObj: bestArr[index]),
+                    itemBuilder: (context, index) {
+                      final book = bestArr[index];
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => BookDetailsScreen(bookId: book['id']),
+                            ),
+                          );
+                        },
+                        child: BestSellerCell(bObj: book),
+                      );
+                    },
                   ),
                 ),
 
-                // Even smaller spacing between genre rows
+                // Genre-specific rows with tap
                 for (var genre in genres) ...[
                   const SizedBox(height: 8),
                   Padding(
@@ -130,13 +155,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-                      itemCount: bestArr.length, // swap with genre-specific list
-                      itemBuilder: (context, index) => BestSellerCell(bObj: bestArr[index]),
+                      itemCount: bestArr.length, // replace with genre-specific list
+                      itemBuilder: (context, index) {
+                        final book = bestArr[index];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => BookDetailsScreen(bookId: book['id']),
+                              ),
+                            );
+                          },
+                          child: BestSellerCell(bObj: book),
+                        );
+                      },
                     ),
                   ),
                 ],
 
-                // Reduced bottom padding before newsletter
                 const SizedBox(height: 16),
 
                 // Monthly Newsletter
@@ -201,3 +238,4 @@ class _HeaderClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(CustomClipper<Path> old) => false;
 }
+
