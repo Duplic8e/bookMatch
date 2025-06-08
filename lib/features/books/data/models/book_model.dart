@@ -1,6 +1,3 @@
-// This model will be used for Firestore interaction and can include fromJson/toJson methods.
-
-// lib/features/books/data/models/book_model.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mobile_app_project_bookstore/features/books/domain/entities/book.dart';
 
@@ -8,16 +5,16 @@ class BookModel extends Book {
   const BookModel({
     required super.id,
     required super.title,
-    required super.author,
-    required super.rating,
+    required super.authors,
     required super.description,
-    required super.genre,
-    required super.price,
-    required super.imageUrl,
-    required super.previewUrl,
-    required super.format,
-    required super.stockStatus,
-    required super.sellerDetails,
+    required super.categories,
+    required super.tags,
+    required super.publishedYear,
+    required super.pageCount,
+    required super.coverImageUrl,
+    required super.pdfUrl,
+    required super.averageRating,
+    required super.ratingsCount,
   });
 
   factory BookModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -25,46 +22,17 @@ class BookModel extends Book {
     return BookModel(
       id: doc.id,
       title: data['title'] ?? 'Unknown Title',
-      author: data['author'] ?? 'Unknown Author',
-      rating: (data['rating'] as num?)?.toDouble() ?? 0.0,
-      description: data['description'] ?? '',
-      genre: data['genre'] ?? 'Uncategorized',
-      price: (data['price'] as num?)?.toDouble() ?? 0.0,
-      imageUrl: data['imageUrl'] ?? '',
-      previewUrl: data['previewUrl'] ?? '',
-      format: _bookFormatFromString(data['format']),
-      stockStatus: data['stockStatus'] ?? 0,
-      sellerDetails: data['sellerDetails'] ?? '',
+      // Safely convert list from Firestore
+      authors: List<String>.from(data['authors'] ?? []),
+      description: data['description'] ?? 'No description available.',
+      categories: List<String>.from(data['categories'] ?? []),
+      tags: List<String>.from(data['tags'] ?? []),
+      publishedYear: data['publishedYear'] ?? 0,
+      pageCount: data['pageCount'] ?? 0,
+      coverImageUrl: data['coverImageUrl'] ?? '',
+      pdfUrl: data['pdfUrl'] ?? '',
+      averageRating: (data['averageRating'] as num?)?.toDouble() ?? 0.0,
+      ratingsCount: data['ratingsCount'] ?? 0,
     );
-  }
-
-  Map<String, dynamic> toFirestore() {
-    return {
-      'title': title,
-      'author': author,
-      'rating': rating,
-      'description': description,
-      'genre': genre,
-      'price': price,
-      'imageUrl': imageUrl,
-      'previewUrl': previewUrl,
-      'format': format.name, // Store enum as string
-      'stockStatus': stockStatus,
-      'sellerDetails': sellerDetails,
-    };
-  }
-
-  static BookFormat _bookFormatFromString(String? formatString) {
-    if (formatString == null) return BookFormat.paperback; // Default
-    switch (formatString.toLowerCase()) {
-      case 'ebook':
-        return BookFormat.ebook;
-      case 'paperback':
-        return BookFormat.paperback;
-      case 'hardcover':
-        return BookFormat.hardcover;
-      default:
-        return BookFormat.paperback;
-    }
   }
 }
