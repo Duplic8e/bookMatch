@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_app_project_bookstore/features/cart/presentation/providers/cart_provider.dart';
+import 'package:mobile_app_project_bookstore/features/library/presentation/providers/library_providers.dart';
 
 class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
@@ -12,7 +13,6 @@ class CartScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        // The back button will now appear automatically because of the router changes
         title: Text('My Cart (${cartItems.length})'),
       ),
       body: cartItems.isEmpty
@@ -47,27 +47,34 @@ class CartScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16.0),
         child: ElevatedButton(
           onPressed: cartItems.isEmpty
-              ? null // Disable button if cart is empty
+              ? null
               : () async {
-            // TODO: Here you would add logic to save books to the user's library
-            await showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Purchase Successful!'),
-                content: const Text('The books have been added to your library.'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('OK'),
-                  ),
-                ],
-              ),
-            );
-            ref.read(cartProvider.notifier).clearCart();
-            // Navigate to the library
-            context.goNamed('library');
+            try {
+              // Call the provider to add books to the library
+              await ref.read(addBooksToLibraryProvider(cartItems).future);
+
+              await showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Purchase Successful!'),
+                  content: const Text('The books have been added to your library.'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                ),
+              );
+
+              ref.read(cartProvider.notifier).clearCart();
+              context.goNamed('library');
+
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: ${e.toString()}'))
+              );
+            }
           },
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
