@@ -22,7 +22,6 @@ class BookModel extends Book {
     return BookModel(
       id: doc.id,
       title: data['title'] ?? 'Unknown Title',
-      // Safely convert list from Firestore
       authors: List<String>.from(data['authors'] ?? []),
       description: data['description'] ?? 'No description available.',
       categories: List<String>.from(data['categories'] ?? []),
@@ -34,5 +33,22 @@ class BookModel extends Book {
       averageRating: (data['averageRating'] as num?)?.toDouble() ?? 0.0,
       ratingsCount: data['ratingsCount'] ?? 0,
     );
+  }
+
+  // ** FIX: Added the missing toFirestore method **
+  Map<String, dynamic> toFirestore() {
+    return {
+      'title': title,
+      'authors': authors,
+      'description': description,
+      'categories': categories,
+      'tags': tags,
+      'publishedYear': publishedYear,
+      'pageCount': pageCount,
+      'coverImageUrl': coverImageUrl,
+      'pdfUrl': pdfUrl,
+      'averageRating': averageRating,
+      'ratingsCount': ratingsCount,
+    };
   }
 }
