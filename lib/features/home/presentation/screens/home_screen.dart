@@ -38,7 +38,6 @@ class TColor {
 }
 // --- END: Manually added TColor Class ---
 
-
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -53,7 +52,9 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authNotifier = ref.read(authNotifierProvider.notifier);
     ref.listen<AuthScreenState>(authNotifierProvider, (previous, next) {
-      if (next.user == null && previous?.user != null && ModalRoute.of(context)?.isCurrent == true) {
+      if (next.user == null &&
+          previous?.user != null &&
+          ModalRoute.of(context)?.isCurrent == true) {
         context.goNamed('signin');
       }
     });
@@ -118,7 +119,11 @@ class HomeScreen extends ConsumerWidget {
                             // Assuming sideMenuScaffoldKey is defined elsewhere
                             // sideMenuScaffoldKey.currentState?.openEndDrawer();
                           },
-                          icon: const Icon(Icons.menu, color: Colors.white, size: 28),
+                          icon: const Icon(
+                            Icons.menu,
+                            color: Colors.white,
+                            size: 28,
+                          ),
                         ),
                       ],
                     ),
@@ -126,40 +131,56 @@ class HomeScreen extends ConsumerWidget {
                       width: media.width,
                       height: 280, // Kept your original height for the carousel
                       child: topPicksAsync.when(
-                        data: (books) => CarouselSlider.builder( // Using CarouselSlider
-                          itemCount: books.length,
-                          itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) {
-                            final scale = max(0.85, 1 - (itemIndex - pageViewIndex).abs() * 0.3);
-                            return Transform.scale(
-                              scale: scale,
-                              child: _TopPickBookTile(book: books[itemIndex]),
-                            );
-                          },
-                          options: CarouselOptions(
-                            autoPlay: false,
-                            aspectRatio: 1,
-                            enlargeCenterPage: true,
-                            viewportFraction: 0.65, // Matches your original viewportFraction
-                            enlargeFactor: 0.4,
-                            enlargeStrategy: CenterPageEnlargeStrategy.zoom,
-                          ),
-                        ),
-                        loading: () => const Center(
-                          child: CircularProgressIndicator(color: Colors.white),
-                        ),
-                        error: (e, _) => Center(
-                          child: Text('Error: $e', style: const TextStyle(color: Colors.white)),
-                        ),
+                        data:
+                            (books) => CarouselSlider.builder(
+                              // Using CarouselSlider
+                              itemCount: books.length,
+                              itemBuilder: (
+                                BuildContext context,
+                                int itemIndex,
+                                int pageViewIndex,
+                              ) {
+                                final scale = max(
+                                  0.85,
+                                  1 - (itemIndex - pageViewIndex).abs() * 0.3,
+                                );
+                                return Transform.scale(
+                                  scale: scale,
+                                  child: _TopPickBookTile(
+                                    book: books[itemIndex],
+                                  ),
+                                );
+                              },
+                              options: CarouselOptions(
+                                autoPlay: false,
+                                aspectRatio: 1,
+                                enlargeCenterPage: true,
+                                viewportFraction:
+                                    0.65, // Matches your original viewportFraction
+                                enlargeFactor: 0.4,
+                                enlargeStrategy: CenterPageEnlargeStrategy.zoom,
+                              ),
+                            ),
+                        loading:
+                            () => const Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            ),
+                        error:
+                            (e, _) => Center(
+                              child: Text(
+                                'Error: $e',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
                       ),
                     ),
                   ],
                 ),
               ],
             ),
-            _Section(
-              title: 'Bestsellers',
-              asyncBooks: bestsellersAsync,
-            ),
+            _Section(title: 'Bestsellers', asyncBooks: bestsellersAsync),
             for (final genre in genres)
               _Section(
                 title: genre,
@@ -169,16 +190,18 @@ class HomeScreen extends ConsumerWidget {
             SizedBox(height: media.width * 0.1),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(children: [
-                Text(
-                  "Monthly Newsletter",
-                  style: TextStyle(
-                    color: TColor.text,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
+              child: Row(
+                children: [
+                  Text(
+                    "Monthly Newsletter",
+                    style: TextStyle(
+                      color: TColor.text,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-              ]),
+                ],
+              ),
             ),
             Container(
               width: double.maxFinite,
@@ -193,16 +216,10 @@ class HomeScreen extends ConsumerWidget {
                 children: [
                   Text(
                     "Receive our monthly newsletter and receive updates on new stock, books and the occasional promotion.",
-                    style: TextStyle(
-                      color: TColor.subTitle,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: TColor.subTitle, fontSize: 12),
                   ),
                   const SizedBox(height: 15),
-                  RoundTextField(
-                    controller: txtName,
-                    hintText: "Name",
-                  ),
+                  RoundTextField(controller: txtName, hintText: "Name"),
                   const SizedBox(height: 15),
                   RoundTextField(
                     controller: txtEmail,
@@ -250,12 +267,14 @@ class _TopPickBookTile extends StatelessWidget {
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: book.coverImageUrl.isNotEmpty
-                  ? Image.network(
-                book.coverImageUrl,
-                fit: BoxFit.cover,
-              )
-                  : const Icon(Icons.book, size: 48, color: Colors.grey), // Fallback color
+              child:
+                  book.coverImageUrl.isNotEmpty
+                      ? Image.network(book.coverImageUrl, fit: BoxFit.cover)
+                      : const Icon(
+                        Icons.book,
+                        size: 48,
+                        color: Colors.grey,
+                      ), // Fallback color
             ),
           ),
           const SizedBox(height: 12),
@@ -264,7 +283,11 @@ class _TopPickBookTile extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black), // Ensure text color is visible
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Colors.black,
+            ), // Ensure text color is visible
           ),
           const SizedBox(height: 4),
           Text(
@@ -272,7 +295,10 @@ class _TopPickBookTile extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: TColor.subTitle), // Using subTitle color
+            style: TextStyle(
+              fontSize: 14,
+              color: TColor.subTitle,
+            ), // Using subTitle color
           ),
         ],
       ),
@@ -285,7 +311,11 @@ class _Section extends StatelessWidget {
   final AsyncValue<List<Book>> asyncBooks;
   final bool isGenreSection; // New flag for genre section styling
 
-  const _Section({required this.title, required this.asyncBooks, this.isGenreSection = false});
+  const _Section({
+    required this.title,
+    required this.asyncBooks,
+    this.isGenreSection = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -293,7 +323,12 @@ class _Section extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 12), // Adjusted padding
+          padding: const EdgeInsets.fromLTRB(
+            20,
+            24,
+            20,
+            12,
+          ), // Adjusted padding
           child: Text(
             title,
             style: TextStyle(
@@ -304,26 +339,44 @@ class _Section extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: isGenreSection ? MediaQuery.of(context).size.width * 0.6 : 240, // Adjust height for genres if needed
+          height:
+              isGenreSection
+                  ? MediaQuery.of(context).size.width * 0.6
+                  : 240, // Adjust height for genres if needed
           child: asyncBooks.when(
-            data: (books) => ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              itemCount: books.length,
-              itemBuilder: (_, i) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: isGenreSection
-                    ? _GenresCell(
-                  // For genre sections, we're passing a Book as a placeholder for genre data.
-                  // You'll need to adapt this if your genre data is different (e.g., a Genre entity).
-                  genre: books[i],
-                  bgcolor: i % 2 == 0 ? TColor.color1 : TColor.color2,
-                )
-                    : _BookTile(book: books[i]),
-              ),
-            ),
-            loading: () => Center(child: CircularProgressIndicator(color: TColor.primary)), // Using primary color
-            error: (e, _) => Center(child: Text('Error: $e', style: TextStyle(color: TColor.text))), // Using text color
+            data:
+                (books) => ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  itemCount: books.length,
+                  itemBuilder:
+                      (_, i) => Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child:
+                            isGenreSection
+                                ? _GenresCell(
+                                  // For genre sections, we're passing a Book as a placeholder for genre data.
+                                  // You'll need to adapt this if your genre data is different (e.g., a Genre entity).
+                                  genre: books[i],
+                                  bgcolor:
+                                      i % 2 == 0
+                                          ? TColor.color1
+                                          : TColor.color2,
+                                )
+                                : _BookTile(book: books[i]),
+                      ),
+                ),
+            loading:
+                () => Center(
+                  child: CircularProgressIndicator(color: TColor.primary),
+                ), // Using primary color
+            error:
+                (e, _) => Center(
+                  child: Text(
+                    'Error: $e',
+                    style: TextStyle(color: TColor.text),
+                  ),
+                ), // Using text color
           ),
         ),
       ],
@@ -351,9 +404,13 @@ class _BookTile extends StatelessWidget {
               width: 120,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: book.coverImageUrl.isNotEmpty
-                    ? Image.network(book.coverImageUrl, fit: BoxFit.cover)
-                    : Container(color: Colors.grey[200], child: const Icon(Icons.book, color: Colors.grey)), // Fallback color
+                child:
+                    book.coverImageUrl.isNotEmpty
+                        ? Image.network(book.coverImageUrl, fit: BoxFit.cover)
+                        : Container(
+                          color: Colors.grey[200],
+                          child: const Icon(Icons.book, color: Colors.grey),
+                        ), // Fallback color
               ),
             ),
             const SizedBox(height: 8),
@@ -361,14 +418,19 @@ class _BookTile extends StatelessWidget {
               book.title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontWeight: FontWeight.bold, color: TColor.text), // Using text color
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: TColor.text,
+              ), // Using text color
             ),
             const SizedBox(height: 2),
             Text(
               'by ${book.author}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall!.copyWith(color: TColor.subTitle), // Using subTitle color
+              style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                color: TColor.subTitle,
+              ), // Using subTitle color
             ),
             const SizedBox(height: 4),
             _StarRating(rating: placeholderRating),
@@ -404,11 +466,15 @@ class _GenresCell extends StatelessWidget {
           // Assuming you have an image for genres, or a placeholder
           genre.coverImageUrl.isNotEmpty
               ? Image.network(
-            genre.coverImageUrl,
-            height: 60,
-            fit: BoxFit.contain,
-          )
-              : Icon(Icons.category, size: 60, color: Colors.white.withOpacity(0.8)), // Placeholder icon
+                genre.coverImageUrl,
+                height: 60,
+                fit: BoxFit.contain,
+              )
+              : Icon(
+                Icons.category,
+                size: 60,
+                color: Colors.white.withOpacity(0.8),
+              ), // Placeholder icon
           const SizedBox(height: 10),
           Text(
             genre.title, // Using book title as genre name for now
@@ -423,7 +489,6 @@ class _GenresCell extends StatelessWidget {
     );
   }
 }
-
 
 class _StarRating extends StatelessWidget {
   final double rating;
