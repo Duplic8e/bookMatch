@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 class LookInsideButton extends StatelessWidget {
   final String bookId;
   final String previewUrl;
-  final String title; // Pass the title for the preview screen AppBar
+  final String title;
 
   const LookInsideButton({
     super.key,
@@ -20,8 +20,8 @@ class LookInsideButton extends StatelessWidget {
       label: const Text('Read Book'),
       onPressed: previewUrl.isNotEmpty
           ? () {
-        // ** FIX: Use goNamed for sub-routes **
-        context.goNamed(
+        // ** CHANGE: Use pushNamed to preserve the navigation stack **
+        context.pushNamed(
           'bookPreview',
           pathParameters: {'bookId': bookId},
           extra: {'url': previewUrl, 'title': title},

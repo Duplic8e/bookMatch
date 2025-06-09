@@ -51,7 +51,6 @@ class LibraryScreen extends ConsumerWidget {
                     children: [
                       Text(book.authors.join(', ')),
                       const SizedBox(height: 8),
-                      // TODO: Add reading progress bar here later
                       const LinearProgressIndicator(
                         value: 0.0, // Placeholder
                         backgroundColor: Colors.grey,
@@ -60,10 +59,10 @@ class LibraryScreen extends ConsumerWidget {
                     ],
                   ),
                   onTap: () {
-                    // Navigate to the book preview to read it
-                    context.goNamed(
+                    // ** CHANGE: Use pushNamed to navigate to the preview **
+                    context.pushNamed(
                       'bookPreview',
-                      pathParameters: {'bookId': book.id}, // Needs a bookId in the path
+                      pathParameters: {'bookId': book.id},
                       extra: {'url': book.pdfUrl, 'title': book.title},
                     );
                   },

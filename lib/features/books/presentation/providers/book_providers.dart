@@ -1,57 +1,46 @@
-// lib/features/books/providers/book_providers.dart
-// Riverpod providers for managing book detail state.
-
-// lib/features/books/presentation/providers/book_providers.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mobile_app_project_bookstore/features/books/data/datasources/book_firestore_datasource.dart';
 import 'package:mobile_app_project_bookstore/features/books/data/repositories/book_repository_impl.dart';
 import 'package:mobile_app_project_bookstore/features/books/domain/entities/book.dart';
-import 'package:mobile_app_project_bookstore/features/books/domain/repositories/book_repository.dart';
 import 'package:mobile_app_project_bookstore/features/books/domain/entities/review.dart';
+import 'package:mobile_app_project_bookstore/features/books/domain/repositories/book_repository.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-// Datasource Provider
+// Provider for the datasource
 final bookFirestoreDataSourceProvider = Provider<BookFirestoreDataSource>((ref) {
   return BookFirestoreDataSource(FirebaseFirestore.instance);
 });
 
-// Repository Provider
+// Provider for the repository
 final bookRepositoryProvider = Provider<BookRepository>((ref) {
   final dataSource = ref.watch(bookFirestoreDataSourceProvider);
-  return BookRepositoryImpl(dataSource);
+  // ** FIX: Correctly pass the dependency to the constructor **
+  return BookRepositoryImpl(firestoreDataSource: dataSource);
 });
 
-// Provider to fetch a single book by its ID
-final bookDetailProvider = FutureProvider.family<Book?, String>((ref, bookId) async {
-  final bookRepository = ref.watch(bookRepositoryProvider);
-  return bookRepository.getBookById(bookId);
+// Provider to get all books
+final allBooksProvider = FutureProvider<List<Book>>((ref) {
+  final repository = ref.watch(bookRepositoryProvider);
+  return repository.getAllBooks();
 });
 
-// Provider to fetch reviews for a book
-final bookReviewsProvider = FutureProvider.family<List<Review>, String>((ref, bookId) async {
-  final bookRepository = ref.watch(bookRepositoryProvider);
-  return bookRepository.getBookReviews(bookId);
+// Provider to get a single book by its ID
+final bookDetailProvider = FutureProvider.family<Book?, String>((ref, bookId) {
+  final repository = ref.watch(bookRepositoryProvider);
+  return repository.getBookById(bookId);
 });
 
-// Provider for submitting a review
-// This could also be a method within a StateNotifier if you need to manage submission state (loading, error)
+// Provider to get reviews for a specific book
+final bookReviewsProvider = FutureProvider.family<List<Review>, String>((ref, bookId) {
+  final repository = ref.watch(bookRepositoryProvider);
+  return repository.getBookReviews(bookId);
+});
+
+// Provider to submit a review
 final submitReviewProvider = Provider((ref) {
-  final bookRepository = ref.watch(bookRepositoryProvider);
-  return ({
-    required String bookId,
-    required Review review,
-  }) async {
-    await bookRepository.submitReview(bookId, review);
-    // Invalidate providers to refetch data after submission
-    ref.invalidate(bookReviewsProvider(bookId));
-    ref.invalidate(bookDetailProvider(bookId)); // If rating changes, for example
-  };
-});
-
-// Provider to fetch all books (or a list for the home screen)
-final allBooksProvider = FutureProvider<List<Book>>((ref) async {
-  final bookRepository = ref.watch(bookRepositoryProvider);
-  // You'll need to add a method like 'getAllBooks' or 'getFeaturedBooks' to your BookRepository
-  // and its implementation in BookRepositoryImpl and BookFirestoreDataSource
-  return bookRepository.getAllBooks(); // Assuming this method exists
+  final repository = ref.watch(bookRepositoryProvider);
+  return ({required String bookId, required Review review}) => repository.submitReview(
+    bookId: bookId,
+    review: review,
+  );
 });

@@ -19,13 +19,14 @@ class HomeScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.shopping_cart_outlined),
             onPressed: () {
-              // Navigate to the top-level cart screen
-              context.goNamed('cart');
+              // ** CHANGE: Use pushNamed to show cart over the current screen **
+              context.pushNamed('cart');
             },
           ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
+              // ... (sign out logic remains the same)
               final confirmed = await showDialog<bool>(
                 context: context,
                 builder: (BuildContext context) {
@@ -45,7 +46,6 @@ class HomeScreen extends ConsumerWidget {
                   );
                 },
               );
-
               if (confirmed == true) {
                 await authNotifier.signOutUser();
               }
@@ -75,18 +75,15 @@ class HomeScreen extends ConsumerWidget {
                 child: InkWell(
                   onTap: () {
                     if (book.id.isNotEmpty) {
-                      // ** FIX: Use goNamed for sub-routes **
-                      context.goNamed(
+                      // ** CHANGE: Use pushNamed to preserve the navigation stack **
+                      context.pushNamed(
                         'bookDetails',
                         pathParameters: {'bookId': book.id},
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Error: Book ID is missing.')),
                       );
                     }
                   },
                   child: Column(
+                    // ... (rest of the card UI is the same)
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Expanded(
@@ -97,12 +94,6 @@ class HomeScreen extends ConsumerWidget {
                               ? Image.network(
                             book.coverImageUrl,
                             fit: BoxFit.cover,
-                            loadingBuilder: (context, child, progress) {
-                              if (progress == null) return child;
-                              return const Center(child: CircularProgressIndicator());
-                            },
-                            errorBuilder: (context, error, stack) =>
-                                Container(color: Colors.grey[200], child: const Icon(Icons.book, size: 50, color: Colors.grey)),
                           )
                               : Container(color: Colors.grey[200], child: const Icon(Icons.book, size: 50, color: Colors.grey)),
                         ),
@@ -140,7 +131,7 @@ class HomeScreen extends ConsumerWidget {
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) =>
-            Center(child: Text('Failed to load books. Please try again later.\nError: $error')),
+            Center(child: Text('Failed to load books. Please try again later.')),
       ),
     );
   }
