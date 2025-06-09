@@ -11,88 +11,74 @@ import 'package:mobile_app_project_bookstore/features/cart/presentation/screens/
 import 'package:mobile_app_project_bookstore/features/home/presentation/screens/home_screen.dart';
 import 'package:mobile_app_project_bookstore/features/home/presentation/screens/scaffold_with_nested_navigation.dart';
 import 'package:mobile_app_project_bookstore/features/library/presentation/screens/library_screen.dart';
+import 'package:mobile_app_project_bookstore/Core/navigation/go_router_refresh_stream.dart';
 
-class SplashScreen extends StatelessWidget {
-  const SplashScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: CircularProgressIndicator()));
-  }
-}
+// Provider for the GoRouter instance
+final goRouterProvider = Provider<GoRouter>((ref) {
+  final authStream = ref.watch(authStateChangesProvider.stream);
 
-final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _shellNavigatorAKey = GlobalKey<NavigatorState>(debugLabel: 'shellA');
-final _shellNavigatorBKey = GlobalKey<NavigatorState>(debugLabel: 'shellB');
-final _shellNavigatorCKey = GlobalKey<NavigatorState>(debugLabel: 'shellC');
-
-GoRouter createRouter(WidgetRef ref) {
   return GoRouter(
-    initialLocation: '/splash',
+    initialLocation: '/home',
     navigatorKey: _rootNavigatorKey,
+    refreshListenable: GoRouterRefreshStream(authStream),
     routes: [
       GoRoute(
-        name: 'splash',
-        path: '/splash',
-        builder: (context, state) => const SplashScreen(),
+        name: 'signin',
+        path: '/signin',
+        builder: (context, state) => const SignInScreen(),
       ),
       GoRoute(
         name: 'signup',
         path: '/signup',
         builder: (context, state) => const SignUpScreen(),
       ),
+      // ** CHANGE: Book routes are now top-level to allow pushing from any screen **
       GoRoute(
-        name: 'signin',
-        path: '/signin',
-        builder: (context, state) => const SignInScreen(),
-      ),
+          name: 'bookDetails',
+          path: '/books/:bookId', // Note the leading '/' making it a top-level route
+          builder: (context, state) {
+            final bookId = state.pathParameters['bookId'];
+            if (bookId == null) {
+              return const Scaffold(body: Center(child: Text("Book ID missing")));
+            }
+            return BookDetailScreen(bookId: bookId);
+          },
+          routes: [
+            GoRoute(
+              path: 'preview',
+              name: 'bookPreview',
+              builder: (context, state) {
+                final args = state.extra as Map<String, dynamic>?;
+                final url = args?['url'] as String?;
+                final title = args?['title'] as String?;
+                return BookPreviewScreen(pdfUrl: url ?? '', bookTitle: title ?? 'PDF');
+              },
+            ),
+          ]),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return ScaffoldWithNestedNavigation(navigationShell: navigationShell);
         },
         branches: [
+          // Home Branch
           StatefulShellBranch(
             navigatorKey: _shellNavigatorAKey,
             routes: [
               GoRoute(
-                name: 'home',
-                path: '/home',
-                builder: (context, state) => const HomeScreen(),
-                routes: [
-                  GoRoute(
-                    name: 'cart', // Cart is now a sub-route of home
-                    path: 'cart',
-                    builder: (context, state) => const CartScreen(),
-                  ),
-                  GoRoute(
-                      name: 'bookDetails',
-                      path: 'books/:bookId',
-                      builder: (context, state) {
-                        final bookId = state.pathParameters['bookId'];
-                        if (bookId == null) {
-                          return const Scaffold(body: Center(child: Text("Book ID missing")));
-                        }
-                        return BookDetailScreen(bookId: bookId);
-                      },
-                      routes: [
-                        GoRoute(
-                          path: 'preview',
-                          name: 'bookPreview',
-                          parentNavigatorKey: _rootNavigatorKey,
-                          builder: (context, state) {
-                            final args = state.extra as Map<String, dynamic>?;
-                            final url = args?['url'] as String?;
-                            final title = args?['title'] as String?;
-                            if (url != null && title != null) {
-                              return BookPreviewScreen(pdfUrl: url, bookTitle: title);
-                            }
-                            return const Scaffold(body: Center(child: Text("Preview not available")));
-                          },
-                        ),
-                      ]),
-                ],
+                  name: 'home',
+                  path: '/home',
+                  builder: (context, state) => const HomeScreen(),
+                  routes: [
+                    GoRoute(
+                      name: 'cart',
+                      path: 'cart',
+                      builder: (context, state) => const CartScreen(),
+                    ),
+                  ]
               ),
             ],
           ),
+          // Library Branch
           StatefulShellBranch(
             navigatorKey: _shellNavigatorBKey,
             routes: [
@@ -103,6 +89,7 @@ GoRouter createRouter(WidgetRef ref) {
               ),
             ],
           ),
+          // Profile Branch
           StatefulShellBranch(
             navigatorKey: _shellNavigatorCKey,
             routes: [
@@ -117,25 +104,22 @@ GoRouter createRouter(WidgetRef ref) {
       ),
     ],
     redirect: (BuildContext context, GoRouterState state) {
-      final authState = ref.watch(authStateChangesProvider);
+      final isLoggedIn = ref.read(authStateChangesProvider).value != null;
       final onAuthScreens = state.matchedLocation == '/signin' || state.matchedLocation == '/signup';
-      final onSplash = state.matchedLocation == '/splash';
 
-      if (authState.isLoading) {
-        return onSplash ? null : '/splash';
-      }
-      final isLoggedIn = authState.hasValue && authState.value != null;
-      if (!isLoggedIn && !onAuthScreens && !onSplash) {
+      if (!isLoggedIn && !onAuthScreens) {
         return '/signin';
       }
-      if (isLoggedIn && (onSplash || onAuthScreens)) {
+      if (isLoggedIn && onAuthScreens) {
         return '/home';
       }
       return null;
     },
-    errorBuilder: (context, state) => Scaffold(
-      appBar: AppBar(title: const Text('Page Not Found')),
-      body: Center(child: Text('Error: ${state.error}')),
-    ),
   );
-}
+});
+
+// private navigators
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+final _shellNavigatorAKey = GlobalKey<NavigatorState>(debugLabel: 'shellA');
+final _shellNavigatorBKey = GlobalKey<NavigatorState>(debugLabel: 'shellB');
+final _shellNavigatorCKey = GlobalKey<NavigatorState>(debugLabel: 'shellC');
