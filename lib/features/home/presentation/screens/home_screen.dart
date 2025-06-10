@@ -19,36 +19,7 @@ class HomeScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.shopping_cart_outlined),
             onPressed: () {
-              // ** CHANGE: Use pushNamed to show cart over the current screen **
               context.pushNamed('cart');
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              // ... (sign out logic remains the same)
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text('Confirm Sign Out'),
-                    content: const Text('Are you sure you want to sign out?'),
-                    actions: <Widget>[
-                      TextButton(
-                        child: const Text('Cancel'),
-                        onPressed: () => Navigator.of(context).pop(false),
-                      ),
-                      TextButton(
-                        child: const Text('Sign Out'),
-                        onPressed: () => Navigator.of(context).pop(true),
-                      ),
-                    ],
-                  );
-                },
-              );
-              if (confirmed == true) {
-                await authNotifier.signOutUser();
-              }
             },
           ),
         ],
@@ -70,12 +41,14 @@ class HomeScreen extends ConsumerWidget {
             itemBuilder: (context, index) {
               final book = books[index];
               return Card(
+                // ** FIX: Explicitly set card color from the theme **
+                // This ensures it contrasts with the scaffold background in both modes.
+                color: Theme.of(context).cardColor,
                 elevation: 2.0,
                 clipBehavior: Clip.antiAlias,
                 child: InkWell(
                   onTap: () {
                     if (book.id.isNotEmpty) {
-                      // ** CHANGE: Use pushNamed to preserve the navigation stack **
                       context.pushNamed(
                         'bookDetails',
                         pathParameters: {'bookId': book.id},
@@ -83,7 +56,6 @@ class HomeScreen extends ConsumerWidget {
                     }
                   },
                   child: Column(
-                    // ... (rest of the card UI is the same)
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Expanded(
