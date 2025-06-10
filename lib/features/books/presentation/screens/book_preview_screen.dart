@@ -10,6 +10,7 @@ class BookPreviewScreen extends ConsumerStatefulWidget {
   final String pdfUrl;
   final String bookTitle;
   final int initialPage;
+  final bool isFromLibrary;
 
   const BookPreviewScreen({
     super.key,
@@ -17,6 +18,7 @@ class BookPreviewScreen extends ConsumerStatefulWidget {
     required this.pdfUrl,
     required this.bookTitle,
     this.initialPage = 1,
+    required this.isFromLibrary,
   });
 
   @override
@@ -28,12 +30,11 @@ class _BookPreviewScreenState extends ConsumerState<BookPreviewScreen> {
   Timer? _debounce;
   int _totalPages = 0;
   int _currentPage = 0;
-
-  // ** FIX: Use the correct enum value for the initial layout mode **
   PdfPageLayoutMode _layoutMode = PdfPageLayoutMode.continuous;
   bool _showControls = true;
   double _sliderValue = 1.0;
-
+  // ** CHANGE: Renamed for clarity **
+  bool _isEyeComfortModeEnabled = false;
 
   @override
   void initState() {
@@ -46,7 +47,7 @@ class _BookPreviewScreenState extends ConsumerState<BookPreviewScreen> {
   @override
   void dispose() {
     _debounce?.cancel();
-    if (_totalPages > 0) {
+    if (widget.isFromLibrary && _totalPages > 0) {
       ref.read(updateProgressProvider(
         (bookId: widget.bookId, pageNumber: _currentPage, totalPages: _totalPages),
       ));
@@ -62,6 +63,8 @@ class _BookPreviewScreenState extends ConsumerState<BookPreviewScreen> {
       _sliderValue = _currentPage.toDouble();
     });
 
+    if (!widget.isFromLibrary) return;
+
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 1500), () {
       if (!mounted || _totalPages == 0) return;
@@ -72,6 +75,7 @@ class _BookPreviewScreenState extends ConsumerState<BookPreviewScreen> {
   }
 
   void _showAddBookmarkDialog() {
+    // ... (logic remains the same)
     final TextEditingController labelController = TextEditingController();
     showDialog(
       context: context,
@@ -102,6 +106,7 @@ class _BookPreviewScreenState extends ConsumerState<BookPreviewScreen> {
   }
 
   void _showBookmarksList(List<Bookmark> bookmarks) {
+    // ... (logic remains the same)
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -144,54 +149,67 @@ class _BookPreviewScreenState extends ConsumerState<BookPreviewScreen> {
       appBar: _showControls ? AppBar(
         title: Text(widget.bookTitle, overflow: TextOverflow.ellipsis),
         actions: [
-          IconButton(
-            // ** FIX: Use the correct enum values for comparison and tooltips **
-            icon: Icon(_layoutMode == PdfPageLayoutMode.continuous ? Icons.view_carousel_outlined : Icons.view_day_outlined),
-            tooltip: _layoutMode == PdfPageLayoutMode.continuous ? 'Horizontal Mode' : 'Vertical Mode',
-            onPressed: () {
-              setState(() {
-                // ** FIX: Use the correct enum values for toggling **
-                _layoutMode = _layoutMode == PdfPageLayoutMode.continuous
-                    ? PdfPageLayoutMode.single
-                    : PdfPageLayoutMode.continuous;
-              });
-            },
-          ),
-          libraryEntryAsync.when(
-            data: (entry) => IconButton(
-              icon: const Icon(Icons.bookmark),
-              tooltip: 'View Bookmarks',
-              onPressed: () => _showBookmarksList(entry?.bookmarks ?? []),
+          if (widget.isFromLibrary) ...[
+            IconButton(
+              icon: Icon(_isEyeComfortModeEnabled ? Icons.wb_sunny_outlined : Icons.bedtime_outlined),
+              tooltip: 'Toggle Eye-Comfort Mode',
+              onPressed: () => setState(() => _isEyeComfortModeEnabled = !_isEyeComfortModeEnabled),
             ),
-            loading: () => const SizedBox.shrink(),
-            error: (e, st) => const Icon(Icons.error),
-          ),
+            IconButton(
+              icon: Icon(_layoutMode == PdfPageLayoutMode.continuous ? Icons.view_carousel_outlined : Icons.view_day_outlined),
+              tooltip: 'Toggle Layout',
+              onPressed: () => setState(() => _layoutMode = _layoutMode == PdfPageLayoutMode.continuous ? PdfPageLayoutMode.single : PdfPageLayoutMode.continuous),
+            ),
+            libraryEntryAsync.when(
+              data: (entry) => IconButton(
+                icon: const Icon(Icons.bookmark_sharp),
+                tooltip: 'View Bookmarks',
+                onPressed: () => _showBookmarksList(entry?.bookmarks ?? []),
+              ),
+              loading: () => const SizedBox.shrink(),
+              error: (e, st) => const Icon(Icons.error),
+            ),
+          ]
         ],
       ) : null,
       body: GestureDetector(
         onTap: () => setState(() => _showControls = !_showControls),
-        child: SfPdfViewer.network(
-          widget.pdfUrl,
-          controller: _pdfViewerController,
-          pageLayoutMode: _layoutMode,
-          onDocumentLoaded: (details) {
-            if (!mounted) return;
-            setState(() {
-              _totalPages = details.document.pages.count;
-            });
-            if (widget.initialPage > 1) {
-              _pdfViewerController.jumpToPage(widget.initialPage);
-            }
-          },
-          onPageChanged: _onPageChanged,
+        child: Stack(
+          children: [
+            SfPdfViewer.network(
+              widget.pdfUrl,
+              controller: _pdfViewerController,
+              pageLayoutMode: _layoutMode,
+              onDocumentLoaded: (details) {
+                if (!mounted) return;
+                setState(() {
+                  _totalPages = details.document.pages.count;
+                });
+                if (widget.initialPage > 1) {
+                  _pdfViewerController.jumpToPage(widget.initialPage);
+                }
+              },
+              onPageChanged: _onPageChanged,
+            ),
+            // ** THE FIX: Use a Sepia Tone overlay instead of a dimming one **
+            if (widget.isFromLibrary && _isEyeComfortModeEnabled)
+              IgnorePointer(
+                child: Container(
+                  // A pleasant, warm color for eye comfort.
+                  color: const Color(0xFFFBF0D9).withOpacity(0.4),
+                  // Using a blend mode can also create interesting effects
+                  // blendMode: BlendMode.multiply,
+                ),
+              ),
+          ],
         ),
       ),
-      floatingActionButton: _showControls ? FloatingActionButton.extended(
+      floatingActionButton: _showControls && widget.isFromLibrary ? FloatingActionButton.extended(
         onPressed: _showAddBookmarkDialog,
         label: const Text('Bookmark Page'),
         icon: const Icon(Icons.bookmark_add_outlined),
       ) : null,
-      bottomNavigationBar: _showControls && _totalPages > 0 ? BottomAppBar(
+      bottomNavigationBar: _showControls && widget.isFromLibrary && _totalPages > 0 ? BottomAppBar(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Row(
@@ -202,14 +220,8 @@ class _BookPreviewScreenState extends ConsumerState<BookPreviewScreen> {
                   value: _sliderValue,
                   min: 1,
                   max: _totalPages > 0 ? _totalPages.toDouble() : 1.0,
-                  onChanged: (value) {
-                    setState(() {
-                      _sliderValue = value;
-                    });
-                  },
-                  onChangeEnd: (value) {
-                    _pdfViewerController.jumpToPage(value.round());
-                  },
+                  onChanged: (value) => setState(() => _sliderValue = value),
+                  onChangeEnd: (value) => _pdfViewerController.jumpToPage(value.round()),
                 ),
               ),
             ],

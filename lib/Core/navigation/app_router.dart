@@ -13,7 +13,6 @@ import 'package:mobile_app_project_bookstore/features/library/presentation/scree
 import 'package:mobile_app_project_bookstore/features/cart/presentation/screens/cart_screen.dart';
 import 'package:mobile_app_project_bookstore/Core/navigation/go_router_refresh_stream.dart';
 
-// Provider for the GoRouter instance
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authStream = ref.watch(authStateChangesProvider.stream);
 
@@ -44,23 +43,25 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               path: 'preview',
               name: 'bookPreview',
               builder: (context, state) {
-                // ** THE FIX IS HERE **
-                // We get the bookId from the path parameters, just like in the parent route.
                 final bookId = state.pathParameters['bookId']!;
                 final args = state.extra as Map<String, dynamic>?;
                 final url = args?['url'] as String?;
                 final title = args?['title'] as String?;
                 final initialPage = args?['initialPage'] as int? ?? 1;
+                // ** CHANGE: Read the new flag from the arguments **
+                final isFromLibrary = args?['isFromLibrary'] as bool? ?? false;
 
                 return BookPreviewScreen(
                   bookId: bookId,
                   pdfUrl: url ?? '',
                   bookTitle: title ?? 'PDF',
                   initialPage: initialPage,
+                  isFromLibrary: isFromLibrary,
                 );
               },
             ),
-          ]),
+          ]
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return ScaffoldWithNestedNavigation(navigationShell: navigationShell);
@@ -79,7 +80,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                       path: 'cart',
                       builder: (context, state) => const CartScreen(),
                     ),
-                  ]),
+                  ]
+              ),
             ],
           ),
           StatefulShellBranch(
@@ -120,7 +122,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-// private navigators
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorAKey = GlobalKey<NavigatorState>(debugLabel: 'shellA');
 final _shellNavigatorBKey = GlobalKey<NavigatorState>(debugLabel: 'shellB');
