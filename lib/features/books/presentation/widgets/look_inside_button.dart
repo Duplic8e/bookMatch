@@ -20,14 +20,18 @@ class LookInsideButton extends StatelessWidget {
       label: const Text('Read Book'),
       onPressed: previewUrl.isNotEmpty
           ? () {
-        // ** CHANGE: Use pushNamed to preserve the navigation stack **
         context.pushNamed(
           'bookPreview',
           pathParameters: {'bookId': bookId},
-          extra: {'url': previewUrl, 'title': title},
+          extra: {
+            'url': previewUrl,
+            'title': title,
+            // ** CHANGE: Explicitly state this is a preview **
+            'isFromLibrary': false,
+          },
         );
       }
-          : null, // Disable if no preview URL
+          : null,
       style: ElevatedButton.styleFrom(
         minimumSize: const Size(double.infinity, 48),
       ),

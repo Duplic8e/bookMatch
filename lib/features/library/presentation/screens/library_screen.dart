@@ -72,7 +72,6 @@ class LibraryScreen extends ConsumerWidget {
                     ],
                   ),
                   onTap: () {
-                    // Navigate to the reader screen, passing the initial page to jump to
                     context.pushNamed(
                       'bookPreview',
                       pathParameters: {'bookId': book.id},
@@ -80,6 +79,8 @@ class LibraryScreen extends ConsumerWidget {
                         'url': book.pdfUrl,
                         'title': book.title,
                         'initialPage': entry.lastReadPage,
+                        // ** CHANGE: Explicitly state this is from the library **
+                        'isFromLibrary': true,
                       },
                     );
                   },
