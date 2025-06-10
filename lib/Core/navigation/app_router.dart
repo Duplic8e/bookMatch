@@ -7,10 +7,10 @@ import 'package:mobile_app_project_bookstore/features/auth/presentation/screens/
 import 'package:mobile_app_project_bookstore/features/auth/presentation/screens/sign_up_screen.dart';
 import 'package:mobile_app_project_bookstore/features/books/presentation/screens/book_details_screen.dart';
 import 'package:mobile_app_project_bookstore/features/books/presentation/screens/book_preview_screen.dart';
-import 'package:mobile_app_project_bookstore/features/cart/presentation/screens/cart_screen.dart';
 import 'package:mobile_app_project_bookstore/features/home/presentation/screens/home_screen.dart';
 import 'package:mobile_app_project_bookstore/features/home/presentation/screens/scaffold_with_nested_navigation.dart';
 import 'package:mobile_app_project_bookstore/features/library/presentation/screens/library_screen.dart';
+import 'package:mobile_app_project_bookstore/features/cart/presentation/screens/cart_screen.dart';
 import 'package:mobile_app_project_bookstore/Core/navigation/go_router_refresh_stream.dart';
 
 // Provider for the GoRouter instance
@@ -32,15 +32,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/signup',
         builder: (context, state) => const SignUpScreen(),
       ),
-      // ** CHANGE: Book routes are now top-level to allow pushing from any screen **
       GoRoute(
           name: 'bookDetails',
-          path: '/books/:bookId', // Note the leading '/' making it a top-level route
+          path: '/books/:bookId',
           builder: (context, state) {
-            final bookId = state.pathParameters['bookId'];
-            if (bookId == null) {
-              return const Scaffold(body: Center(child: Text("Book ID missing")));
-            }
+            final bookId = state.pathParameters['bookId']!;
             return BookDetailScreen(bookId: bookId);
           },
           routes: [
@@ -48,10 +44,20 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               path: 'preview',
               name: 'bookPreview',
               builder: (context, state) {
+                // ** THE FIX IS HERE **
+                // We get the bookId from the path parameters, just like in the parent route.
+                final bookId = state.pathParameters['bookId']!;
                 final args = state.extra as Map<String, dynamic>?;
                 final url = args?['url'] as String?;
                 final title = args?['title'] as String?;
-                return BookPreviewScreen(pdfUrl: url ?? '', bookTitle: title ?? 'PDF');
+                final initialPage = args?['initialPage'] as int? ?? 1;
+
+                return BookPreviewScreen(
+                  bookId: bookId,
+                  pdfUrl: url ?? '',
+                  bookTitle: title ?? 'PDF',
+                  initialPage: initialPage,
+                );
               },
             ),
           ]),
@@ -60,7 +66,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           return ScaffoldWithNestedNavigation(navigationShell: navigationShell);
         },
         branches: [
-          // Home Branch
           StatefulShellBranch(
             navigatorKey: _shellNavigatorAKey,
             routes: [
@@ -74,11 +79,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                       path: 'cart',
                       builder: (context, state) => const CartScreen(),
                     ),
-                  ]
-              ),
+                  ]),
             ],
           ),
-          // Library Branch
           StatefulShellBranch(
             navigatorKey: _shellNavigatorBKey,
             routes: [
@@ -89,7 +92,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // Profile Branch
           StatefulShellBranch(
             navigatorKey: _shellNavigatorCKey,
             routes: [
