@@ -6,6 +6,7 @@ import 'package:mobile_app_project_bookstore/features/auth/presentation/provider
 // CORRECTED import path for book_providers.dart
 import 'package:mobile_app_project_bookstore/features/books/providers/book_providers.dart'; // CORRECTED import path for Book entity
 import 'package:mobile_app_project_bookstore/features/books/domain/entities/book.dart';
+import 'package:mobile_app_project_bookstore/features/search/screens/search_overlay.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -27,6 +28,16 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('KetaBook Home'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (_) => const SearchOverlay(), // Create this next
+              );
+            },
+          ),
           IconButton(icon: const Icon(Icons.person), onPressed: () {
             // Placeholder for profile navigation or action
           }),
@@ -103,7 +114,7 @@ class HomeScreen extends ConsumerWidget {
                         trailing: Text('\$${book.price.toStringAsFixed(2)}'),
                         onTap: () {
                           // Navigation path remains the same, GoRouter handles resolution
-                          context.go('/books/${book.id}');
+                          context.push('/books/${book.id}');
                         },
                       ),
                     );
