@@ -97,7 +97,10 @@ GoRouter createRouter(WidgetRef ref) {
               body: const Center(child: Text("Book ID is missing.")),
             );
           }
-          return BookDetailsScreen(bookId: bookId);
+          return BookDetailsScreen(
+            bookId: bookId,
+            extras: state.extra as Map<String, dynamic>?,
+          );
         },
       ),
     ],

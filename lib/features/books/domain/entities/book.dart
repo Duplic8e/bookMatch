@@ -8,6 +8,9 @@ class Book {
   final String description;
   final double price;
   final List<String> genres;
+  final List<String> tags;
+  final List<String> categories;
+
 
   Book({
     required this.id,
@@ -17,5 +20,8 @@ class Book {
     this.description = 'No description available.',
     required this.price,
     this.genres = const [],
+    this.tags = const [],
+    this.categories = const [],
   });
+
 }
