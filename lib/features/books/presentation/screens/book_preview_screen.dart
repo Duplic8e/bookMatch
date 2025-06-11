@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile_app_project_bookstore/features/library/domain/entities/bookmark.dart';
 import 'package:mobile_app_project_bookstore/features/library/presentation/providers/library_providers.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -33,7 +34,6 @@ class _BookPreviewScreenState extends ConsumerState<BookPreviewScreen> {
   PdfPageLayoutMode _layoutMode = PdfPageLayoutMode.continuous;
   bool _showControls = true;
   double _sliderValue = 1.0;
-  // ** CHANGE: Renamed for clarity **
   bool _isEyeComfortModeEnabled = false;
 
   @override
@@ -75,7 +75,6 @@ class _BookPreviewScreenState extends ConsumerState<BookPreviewScreen> {
   }
 
   void _showAddBookmarkDialog() {
-    // ... (logic remains the same)
     final TextEditingController labelController = TextEditingController();
     showDialog(
       context: context,
@@ -106,7 +105,6 @@ class _BookPreviewScreenState extends ConsumerState<BookPreviewScreen> {
   }
 
   void _showBookmarksList(List<Bookmark> bookmarks) {
-    // ... (logic remains the same)
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -150,6 +148,19 @@ class _BookPreviewScreenState extends ConsumerState<BookPreviewScreen> {
         title: Text(widget.bookTitle, overflow: TextOverflow.ellipsis),
         actions: [
           if (widget.isFromLibrary) ...[
+            // ** NEW: "Share a Thought" Button **
+            IconButton(
+              icon: const Icon(Icons.share),
+              tooltip: 'Share a Thought',
+              onPressed: () {
+                final citation = {
+                  'title': widget.bookTitle,
+                  'pageNumber': _currentPage,
+                  // You could also add book.id, author, etc.
+                };
+                context.pushNamed('createPost', extra: citation);
+              },
+            ),
             IconButton(
               icon: Icon(_isEyeComfortModeEnabled ? Icons.wb_sunny_outlined : Icons.bedtime_outlined),
               tooltip: 'Toggle Eye-Comfort Mode',
@@ -191,14 +202,10 @@ class _BookPreviewScreenState extends ConsumerState<BookPreviewScreen> {
               },
               onPageChanged: _onPageChanged,
             ),
-            // ** THE FIX: Use a Sepia Tone overlay instead of a dimming one **
             if (widget.isFromLibrary && _isEyeComfortModeEnabled)
               IgnorePointer(
                 child: Container(
-                  // A pleasant, warm color for eye comfort.
-                  color: const Color(0xFFFBF0D9).withOpacity(0.4),
-                  // Using a blend mode can also create interesting effects
-                  // blendMode: BlendMode.multiply,
+                  color: const Color(0x66FBF0D9),
                 ),
               ),
           ],
