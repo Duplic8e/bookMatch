@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:mobile_app_project_bookstore/Core/navigation/app_router.dart';
-import 'package:mobile_app_project_bookstore/Core/theme/app_theme.dart';
-import 'package:mobile_app_project_bookstore/Core/theme/theme_provider.dart';
+// ** FIX: Corrected case sensitivity **
+import 'package:mobile_app_project_bookstore/core/navigation/app_router.dart';
+import 'package:mobile_app_project_bookstore/core/theme/app_theme.dart';
+import 'package:mobile_app_project_bookstore/core/theme/theme_provider.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -12,7 +13,6 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // ** NEW: Initialize Hive and open our theme box **
   await Hive.initFlutter();
   await Hive.openBox(themeBoxName);
 
@@ -29,14 +29,12 @@ class KetaBookApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(goRouterProvider);
-    // ** NEW: Watch our theme provider for the current theme mode **
     final themeMode = ref.watch(themeNotifierProvider);
 
     return MaterialApp.router(
       title: 'KetaBook',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      // ** CHANGE: Use the state from our provider **
       themeMode: themeMode,
       debugShowCheckedModeBanner: false,
       routerConfig: router,
