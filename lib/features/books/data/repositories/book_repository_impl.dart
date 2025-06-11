@@ -1,69 +1,60 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+import 'package:mobile_app_project_bookstore/features/books/data/datasources/book_firestore_datasource.dart';
+import 'package:mobile_app_project_bookstore/features/books/data/models/review_model.dart';
 import 'package:mobile_app_project_bookstore/features/books/domain/entities/book.dart';
+import 'package:mobile_app_project_bookstore/features/books/domain/entities/review.dart';
 import 'package:mobile_app_project_bookstore/features/books/domain/repositories/book_repository.dart';
 
 class BookRepositoryImpl implements BookRepository {
-  final FirebaseFirestore firestore;
+  final BookFirestoreDataSource firestoreDataSource;
 
-  BookRepositoryImpl(this.firestore);
+  BookRepositoryImpl({required this.firestoreDataSource});
 
   @override
-  Future<List<Book>> fetchAllBooks() async {
-    final snapshot = await firestore.collection('books').get();
-    return snapshot.docs.map((doc) {
-      final data = doc.data();
-      return Book(
-        id: doc.id,
-        title: data['title'] ?? '',
-        author: (data['authors'] as List?)?.first ?? '',
-        coverImageUrl: data['coverImageUrl'] ?? '',
-        description: data['description'] ?? '',
-        price: (data['price'] as num?)?.toDouble() ?? 0.0,
-        genres: List<String>.from(data['genres'] ?? []),
-        tags: List<String>.from(data['tags'] ?? []),
-        categories: List<String>.from(data['categories'] ?? []),
-      );
-    }).toList();
+  Future<List<Book>> getAllBooks() async {
+    try {
+      return await firestoreDataSource.getAllBooks();
+    } catch (e) {
+      debugPrint('Error in BookRepositoryImpl -> getAllBooks: $e');
+      return [];
+    }
   }
 
   @override
-  Future<Book?> fetchBookById(String id) async {
-    final doc = await firestore.collection('books').doc(id).get();
-    if (!doc.exists) return null;
-    final data = doc.data()!;
-    return Book(
-      id: doc.id,
-      title: data['title'] ?? '',
-      author: (data['authors'] as List?)?.first ?? '',
-      coverImageUrl: data['coverImageUrl'] ?? '',
-      description: data['description'] ?? '',
-      price: (data['price'] as num?)?.toDouble() ?? 0.0,
-      genres: List<String>.from(data['genres'] ?? []),
-      tags: List<String>.from(data['tags'] ?? []),
-      categories: List<String>.from(data['categories'] ?? []),
-    );
+  Future<Book?> getBookById(String id) async {
+    try {
+      return await firestoreDataSource.getBookById(id);
+    } catch (e) {
+      debugPrint('Error in BookRepositoryImpl -> getBookById: $e');
+      return null;
+    }
   }
 
   @override
-  Future<List<Book>> fetchBooksByGenre(String genre) async {
-    final snapshot = await firestore
-        .collection('books')
-        .where('genres', arrayContains: genre)
-        .get();
+  Future<List<Review>> getBookReviews(String bookId) async {
+    try {
+      return await firestoreDataSource.getBookReviews(bookId);
+    } catch (e) {
+      debugPrint('Error in BookRepositoryImpl -> getBookReviews: $e');
+      return [];
+    }
+  }
 
-    return snapshot.docs.map((doc) {
-      final data = doc.data();
-      return Book(
-        id: doc.id,
-        title: data['title'] ?? '',
-        author: (data['authors'] as List?)?.first ?? '',
-        coverImageUrl: data['coverImageUrl'] ?? '',
-        description: data['description'] ?? '',
-        price: (data['price'] as num?)?.toDouble() ?? 0.0,
-        genres: List<String>.from(data['genres'] ?? []),
-        tags: List<String>.from(data['tags'] ?? []),
-        categories: List<String>.from(data['categories'] ?? []),
+  @override
+  Future<void> submitReview({required String bookId, required Review review}) async {
+    try {
+      final reviewModel = ReviewModel(
+        id: review.id,
+        userId: review.userId,
+        userName: review.userName,
+        rating: review.rating,
+        comment: review.comment,
+        timestamp: review.timestamp,
       );
-    }).toList();
+      await firestoreDataSource.submitReview(bookId, reviewModel);
+    } catch (e) {
+      debugPrint('Error in BookRepositoryImpl -> submitReview: $e');
+      rethrow;
+    }
   }
 }

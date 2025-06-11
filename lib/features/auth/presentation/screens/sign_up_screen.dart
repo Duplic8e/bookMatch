@@ -3,193 +3,149 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_app_project_bookstore/features/auth/presentation/providers/auth_providers.dart';
 
-class SignUpScreen extends ConsumerStatefulWidget { // Changed to ConsumerStatefulWidget for local state
+class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
 
   @override
   ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignUpScreenState extends ConsumerState<SignUpScreen> { // ConsumerState
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  final confirmPasswordController = TextEditingController();
-  final formKey = GlobalKey<FormState>();
+class _SignUpScreenState extends ConsumerState<SignUpScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _displayNameController = TextEditingController();
 
-  // Example: Local state for preferences - adapt as needed for your actual preferences UI
-  Set<String> _selectedPreferences = {}; // Example: use a more complex UI for this
+  // State for genre selection
+  final List<String> _allGenres = ['Science Fiction', 'Mystery', 'Romance', 'Adventure', 'Fantasy', 'Horror', 'Biography'];
+  final Set<String> _selectedGenres = {};
 
   @override
   void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
-    confirmPasswordController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _displayNameController.dispose();
     super.dispose();
   }
 
+  void _submit() {
+    // Clear any previous errors when the user tries to submit again
+    ref.read(authNotifierProvider.notifier).clearError();
+
+    if (_formKey.currentState!.validate()) {
+      if (_selectedGenres.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select at least one favorite genre.')),
+        );
+        return;
+      }
+
+      // ** FIX: Pass all required arguments, including the converted genre list **
+      ref.read(authNotifierProvider.notifier).signUpUser(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+        _displayNameController.text.trim(),
+        _selectedGenres.toList(), // Convert Set to List
+      );
+    }
+  }
+
   @override
-  Widget build(BuildContext context) { // Removed WidgetRef from here, use `ref` from ConsumerState
-    // Listen to the AuthNotifier state for errors or navigation
+  Widget build(BuildContext context) {
     ref.listen<AuthScreenState>(authNotifierProvider, (previous, next) {
-      if (next.error != null && next.error!.isNotEmpty) {
+      if (next.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(next.error!)),
         );
-        ref.read(authNotifierProvider.notifier).clearError();
-      }
-      if (next.user != null) {
-        // User is signed up and logged in, GoRouter's redirect logic
-        // should handle navigation to '/home' or appropriate screen.
       }
     });
 
-    // Watch the AuthNotifier state to enable/disable button and show loading
     final authState = ref.watch(authNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Create KetaBook Account')),
+      appBar: AppBar(
+        title: const Text('Sign Up'),
+      ),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(16.0),
           child: Form(
-            key: formKey,
+            key: _formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                const Text(
-                  'Join KetaBook!',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 30),
+                Text('Create Your Account', style: Theme.of(context).textTheme.headlineMedium),
+                const SizedBox(height: 24),
                 TextFormField(
-                  controller: emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    hintText: 'you@example.com',
-                    prefixIcon: Icon(Icons.email),
-                    border: OutlineInputBorder(),
-                  ),
+                  controller: _displayNameController,
+                  decoration: const InputDecoration(labelText: 'Display Name', border: OutlineInputBorder()),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter a display name';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    if (!value.contains('@') || !value.contains('.')) {
+                    if (value == null || value.isEmpty || !value.contains('@')) {
                       return 'Please enter a valid email';
                     }
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 TextFormField(
-                  controller: passwordController,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    hintText: 'Minimum 6 characters',
-                    prefixIcon: Icon(Icons.lock),
-                    border: OutlineInputBorder(),
-                  ),
+                  controller: _passwordController,
+                  decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
                   obscureText: true,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
+                    if (value == null || value.isEmpty || value.length < 6) {
+                      return 'Password must be at least 6 characters long';
                     }
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: confirmPasswordController,
-                  decoration: const InputDecoration(
-                    labelText: 'Confirm Password',
-                    prefixIcon: Icon(Icons.lock_outline),
-                    border: OutlineInputBorder(),
-                  ),
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please confirm your password';
-                    }
-                    if (value != passwordController.text) {
-                      return 'Passwords do not match';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                // --- Placeholder for Preferences ---
-                // TODO: Replace this with your actual preferences UI
-                // For now, let's add a simple multi-select chip example
-                const Text("Select Preferences (Example):", style: TextStyle(fontSize: 16)),
+                const SizedBox(height: 24),
+                Text('Select your favorite genres:', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
                 Wrap(
                   spacing: 8.0,
-                  children: <String>['Fiction', 'Sci-Fi', 'Mystery', 'History', 'Tech']
-                      .map((String preference) {
-                    return ChoiceChip(
-                      label: Text(preference),
-                      selected: _selectedPreferences.contains(preference),
+                  runSpacing: 4.0,
+                  children: _allGenres.map((genre) {
+                    final isSelected = _selectedGenres.contains(genre);
+                    return FilterChip(
+                      label: Text(genre),
+                      selected: isSelected,
                       onSelected: (bool selected) {
-                        setState(() { // Use setState for local UI changes
+                        setState(() {
                           if (selected) {
-                            _selectedPreferences.add(preference);
+                            _selectedGenres.add(genre);
                           } else {
-                            _selectedPreferences.remove(preference);
+                            _selectedGenres.remove(genre);
                           }
                         });
                       },
                     );
                   }).toList(),
                 ),
-                // --- End of Placeholder ---
-                const SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: authState.isLoading
-                      ? null
-                      : () {
-                    if (formKey.currentState!.validate()) {
-                      // TODO: Add proper preference selection UI and pass the selected preferences
-                      // For now, using the example _selectedPreferences
-                      if (_selectedPreferences.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please select at least one preference.')),
-                        );
-                        return;
-                      }
-
-                      ref.read(authNotifierProvider.notifier).signUpUser(
-                        emailController.text.trim(),
-                        passwordController.text.trim(),
-                        _selectedPreferences, // Pass selected preferences
-                      );
-                    }
-                  },
+                const SizedBox(height: 24),
+                authState.isLoading
+                    ? const CircularProgressIndicator()
+                    : ElevatedButton(
+                  onPressed: _submit,
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    textStyle: const TextStyle(fontSize: 18),
+                    minimumSize: const Size(double.infinity, 50),
                   ),
-                  child: authState.isLoading
-                      ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 3,
-                    ),
-                  )
-                      : const Text('Sign Up'),
+                  child: const Text('Sign Up'),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 TextButton(
-                  onPressed: authState.isLoading
-                      ? null
-                      : () {
-                    context.go('/signin'); // Navigate to SignInScreen
-                  },
+                  onPressed: () => context.goNamed('signin'),
                   child: const Text('Already have an account? Sign In'),
                 ),
               ],
