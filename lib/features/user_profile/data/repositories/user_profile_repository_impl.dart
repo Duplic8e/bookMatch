@@ -2,20 +2,22 @@ import 'package:mobile_app_project_bookstore/features/user_profile/data/datasour
 import 'package:mobile_app_project_bookstore/features/user_profile/domain/repositories/user_profile_repository.dart';
 
 class UserProfileRepositoryImpl implements UserProfileRepository {
-  final FirestoreUserProfileDataSource _dataSource;
+  final FirestoreUserProfileDataSource dataSource;
 
-  UserProfileRepositoryImpl(this._dataSource);
+  UserProfileRepositoryImpl({required this.dataSource});
 
   @override
   Future<void> createUserProfile({
-    required String userId,
+    required String uid,
     required String email,
-    required Set<String> preferences,
-  }) async {
-    await _dataSource.createUserProfile(
-      userId: userId,
+    required String displayName,
+    required List<String> favoriteGenres,
+  }) {
+    return dataSource.createUserProfile(
+      uid: uid,
       email: email,
-      preferences: preferences,
+      displayName: displayName,
+      favoriteGenres: favoriteGenres,
     );
   }
 }

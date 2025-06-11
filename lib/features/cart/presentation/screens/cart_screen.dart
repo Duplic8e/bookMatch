@@ -50,9 +50,9 @@ class CartScreen extends ConsumerWidget {
               ? null
               : () async {
             try {
-              // Call the provider to add books to the library
               await ref.read(addBooksToLibraryProvider(cartItems).future);
 
+              if (!context.mounted) return; // FIX: Check if context is still valid
               await showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
@@ -68,9 +68,11 @@ class CartScreen extends ConsumerWidget {
               );
 
               ref.read(cartProvider.notifier).clearCart();
+              if (!context.mounted) return; // FIX: Check if context is still valid
               context.goNamed('library');
 
             } catch (e) {
+              if (!context.mounted) return; // FIX: Check if context is still valid
               ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Error: ${e.toString()}'))
               );

@@ -7,15 +7,15 @@ import 'package:mobile_app_project_bookstore/features/auth/presentation/screens/
 import 'package:mobile_app_project_bookstore/features/auth/presentation/screens/sign_up_screen.dart';
 import 'package:mobile_app_project_bookstore/features/books/presentation/screens/book_details_screen.dart';
 import 'package:mobile_app_project_bookstore/features/books/presentation/screens/book_preview_screen.dart';
-import 'package:mobile_app_project_bookstore/features/cart/presentation/screens/cart_screen.dart';
 import 'package:mobile_app_project_bookstore/features/home/presentation/screens/home_screen.dart';
 import 'package:mobile_app_project_bookstore/features/home/presentation/screens/scaffold_with_nested_navigation.dart';
 import 'package:mobile_app_project_bookstore/features/library/presentation/screens/library_screen.dart';
-import 'package:mobile_app_project_bookstore/Core/navigation/go_router_refresh_stream.dart';
+import 'package:mobile_app_project_bookstore/features/cart/presentation/screens/cart_screen.dart';
+import 'package:mobile_app_project_bookstore/core/navigation/go_router_refresh_stream.dart';
 
-// Provider for the GoRouter instance
 final goRouterProvider = Provider<GoRouter>((ref) {
-  final authStream = ref.watch(authStateChangesProvider.stream);
+  // ** FIX: Use the new raw stream provider **
+  final authStream = ref.watch(authStateStreamProvider);
 
   return GoRouter(
     initialLocation: '/home',
@@ -32,15 +32,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/signup',
         builder: (context, state) => const SignUpScreen(),
       ),
-      // ** CHANGE: Book routes are now top-level to allow pushing from any screen **
       GoRoute(
           name: 'bookDetails',
-          path: '/books/:bookId', // Note the leading '/' making it a top-level route
+          path: '/books/:bookId',
           builder: (context, state) {
-            final bookId = state.pathParameters['bookId'];
-            if (bookId == null) {
-              return const Scaffold(body: Center(child: Text("Book ID missing")));
-            }
+            final bookId = state.pathParameters['bookId']!;
             return BookDetailScreen(bookId: bookId);
           },
           routes: [
@@ -48,19 +44,28 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               path: 'preview',
               name: 'bookPreview',
               builder: (context, state) {
+                final bookId = state.pathParameters['bookId']!;
                 final args = state.extra as Map<String, dynamic>?;
                 final url = args?['url'] as String?;
                 final title = args?['title'] as String?;
-                return BookPreviewScreen(pdfUrl: url ?? '', bookTitle: title ?? 'PDF');
+                final initialPage = args?['initialPage'] as int? ?? 1;
+                final isFromLibrary = args?['isFromLibrary'] as bool? ?? false;
+                return BookPreviewScreen(
+                  bookId: bookId,
+                  pdfUrl: url ?? '',
+                  bookTitle: title ?? 'PDF',
+                  initialPage: initialPage,
+                  isFromLibrary: isFromLibrary,
+                );
               },
             ),
-          ]),
+          ]
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return ScaffoldWithNestedNavigation(navigationShell: navigationShell);
         },
         branches: [
-          // Home Branch
           StatefulShellBranch(
             navigatorKey: _shellNavigatorAKey,
             routes: [
@@ -78,7 +83,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // Library Branch
           StatefulShellBranch(
             navigatorKey: _shellNavigatorBKey,
             routes: [
@@ -89,7 +93,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // Profile Branch
           StatefulShellBranch(
             navigatorKey: _shellNavigatorCKey,
             routes: [
@@ -104,7 +107,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
     ],
     redirect: (BuildContext context, GoRouterState state) {
-      final isLoggedIn = ref.read(authStateChangesProvider).value != null;
+      final isLoggedIn = ref.read(currentUserProvider) != null;
       final onAuthScreens = state.matchedLocation == '/signin' || state.matchedLocation == '/signup';
 
       if (!isLoggedIn && !onAuthScreens) {
@@ -118,7 +121,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-// private navigators
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorAKey = GlobalKey<NavigatorState>(debugLabel: 'shellA');
 final _shellNavigatorBKey = GlobalKey<NavigatorState>(debugLabel: 'shellB');

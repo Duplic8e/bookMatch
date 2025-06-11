@@ -1,19 +1,22 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_app_project_bookstore/features/user_profile/data/datasources/firestore_user_profile_datasource.dart';
 import 'package:mobile_app_project_bookstore/features/user_profile/data/repositories/user_profile_repository_impl.dart';
 import 'package:mobile_app_project_bookstore/features/user_profile/domain/repositories/user_profile_repository.dart';
 
-// Provider for FirestoreUserProfileDataSource
-final firestoreUserProfileDataSourceProvider = Provider<FirestoreUserProfileDataSource>((ref) {
-  return FirestoreUserProfileDataSource();
+// Provider for the user profile datasource
+final userProfileDataSourceProvider = Provider<FirestoreUserProfileDataSource>((ref) {
+  return FirestoreUserProfileDataSource(FirebaseFirestore.instance);
 });
 
-// Provider for UserProfileRepository
+// Provider for the user profile repository
 final userProfileRepositoryProvider = Provider<UserProfileRepository>((ref) {
-  final dataSource = ref.watch(firestoreUserProfileDataSourceProvider);
-  return UserProfileRepositoryImpl(dataSource);
+  final dataSource = ref.watch(userProfileDataSourceProvider);
+  return UserProfileRepositoryImpl(dataSource: dataSource);
 });
 
-// You might also create a StateNotifier here if you need to manage
-// the state of loading/saving user profiles, similar to AuthNotifier.
-// For now, we'll call the repository method directly.
+// This provider exposes the createUserProfile function for the auth notifier to use.
+final createUserProfileProvider = Provider((ref) {
+  final repository = ref.watch(userProfileRepositoryProvider);
+  return repository.createUserProfile;
+});

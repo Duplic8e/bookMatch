@@ -1,8 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:mobile_app_project_bookstore/features/books/data/datasources/book_firestore_datasource.dart';
+import 'package:mobile_app_project_bookstore/features/books/data/models/review_model.dart';
 import 'package:mobile_app_project_bookstore/features/books/domain/entities/book.dart';
 import 'package:mobile_app_project_bookstore/features/books/domain/entities/review.dart';
 import 'package:mobile_app_project_bookstore/features/books/domain/repositories/book_repository.dart';
-import 'package:mobile_app_project_bookstore/features/books/data/models/review_model.dart';
 
 class BookRepositoryImpl implements BookRepository {
   final BookFirestoreDataSource firestoreDataSource;
@@ -12,10 +13,9 @@ class BookRepositoryImpl implements BookRepository {
   @override
   Future<List<Book>> getAllBooks() async {
     try {
-      final bookModels = await firestoreDataSource.getAllBooks();
-      return bookModels;
+      return await firestoreDataSource.getAllBooks();
     } catch (e) {
-      print('Error getting all books: $e');
+      debugPrint('Error in BookRepositoryImpl -> getAllBooks: $e');
       return [];
     }
   }
@@ -25,7 +25,7 @@ class BookRepositoryImpl implements BookRepository {
     try {
       return await firestoreDataSource.getBookById(id);
     } catch (e) {
-      print('Error getting book by ID: $e');
+      debugPrint('Error in BookRepositoryImpl -> getBookById: $e');
       return null;
     }
   }
@@ -33,10 +33,9 @@ class BookRepositoryImpl implements BookRepository {
   @override
   Future<List<Review>> getBookReviews(String bookId) async {
     try {
-      final reviewModels = await firestoreDataSource.getBookReviews(bookId);
-      return reviewModels;
+      return await firestoreDataSource.getBookReviews(bookId);
     } catch (e) {
-      print('Error getting book reviews: $e');
+      debugPrint('Error in BookRepositoryImpl -> getBookReviews: $e');
       return [];
     }
   }
@@ -54,7 +53,7 @@ class BookRepositoryImpl implements BookRepository {
       );
       await firestoreDataSource.submitReview(bookId, reviewModel);
     } catch (e) {
-      print('Error submitting review: $e');
+      debugPrint('Error in BookRepositoryImpl -> submitReview: $e');
       rethrow;
     }
   }

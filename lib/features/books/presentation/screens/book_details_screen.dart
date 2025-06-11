@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile_app_project_bookstore/features/books/domain/entities/book.dart';
 import 'package:mobile_app_project_bookstore/features/books/presentation/providers/book_providers.dart';
 import 'package:mobile_app_project_bookstore/features/books/presentation/widgets/look_inside_button.dart';
 import 'package:mobile_app_project_bookstore/features/books/presentation/widgets/review_list.dart';
@@ -27,7 +26,7 @@ class BookDetailScreen extends ConsumerWidget {
             return const Center(child: Text('Book not found.'));
           }
           return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100), // More padding for button
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -103,7 +102,6 @@ class BookDetailScreen extends ConsumerWidget {
       floatingActionButton: book != null
           ? FloatingActionButton.extended(
         onPressed: () {
-          // ** LOGIC TO ADD TO CART **
           ref.read(cartProvider.notifier).addToCart(book);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
