@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-// ** THE FIX: Corrected the import path from '.' to ':' **11111111
 import 'package:mobile_app_project_bookstore/features/auth/data/datasources/firebase_auth_datasource.dart';
 import 'package:mobile_app_project_bookstore/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:mobile_app_project_bookstore/features/auth/domain/repositories/auth_repository.dart';
@@ -8,18 +7,20 @@ import 'package:mobile_app_project_bookstore/features/user_profile/presentation/
 
 part 'auth_providers.g.dart';
 
+// By using the @riverpod annotation, the Ref type is inferred automatically,
+// which fixes the deprecation warnings for FirebaseAuthDataSourceRef, etc.
 @riverpod
-FirebaseAuthDataSource firebaseAuthDataSource(FirebaseAuthDataSourceRef ref) {
+FirebaseAuthDataSource firebaseAuthDataSource(ref) {
   return FirebaseAuthDataSource(FirebaseAuth.instance);
 }
 
 @riverpod
-AuthRepository authRepository(AuthRepositoryRef ref) {
+AuthRepository authRepository(ref) {
   return AuthRepositoryImpl(dataSource: ref.watch(firebaseAuthDataSourceProvider));
 }
 
 @riverpod
-Stream<User?> authStateChanges(AuthStateChangesRef ref) {
+Stream<User?> authStateChanges(ref) {
   return ref.watch(authRepositoryProvider).authStateChanges;
 }
 

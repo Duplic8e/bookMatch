@@ -7,38 +7,29 @@ import 'package:mobile_app_project_bookstore/features/auth/presentation/screens/
 import 'package:mobile_app_project_bookstore/features/auth/presentation/screens/sign_up_screen.dart';
 import 'package:mobile_app_project_bookstore/features/books/presentation/screens/book_details_screen.dart';
 import 'package:mobile_app_project_bookstore/features/books/presentation/screens/book_preview_screen.dart';
+import 'package:mobile_app_project_bookstore/features/cart/presentation/screens/cart_screen.dart';
+import 'package:mobile_app_project_bookstore/features/community/screens/community_screen.dart';
+import 'package:mobile_app_project_bookstore/features/community/screens/create_post_screen.dart';
+import 'package:mobile_app_project_bookstore/features/community/screens/post_details_screen.dart';
 import 'package:mobile_app_project_bookstore/features/home/presentation/screens/home_screen.dart';
 import 'package:mobile_app_project_bookstore/features/home/presentation/screens/scaffold_with_nested_navigation.dart';
 import 'package:mobile_app_project_bookstore/features/library/presentation/screens/library_screen.dart';
-import 'package:mobile_app_project_bookstore/features/cart/presentation/screens/cart_screen.dart';
 import 'package:mobile_app_project_bookstore/core/navigation/go_router_refresh_stream.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
-  // We listen to the raw stream provider for auth state changes.
   final authStateStream = ref.watch(authStateChangesProvider.stream);
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/signin',
+    initialLocation: '/home',
     refreshListenable: GoRouterRefreshStream(authStateStream),
     redirect: (BuildContext context, GoRouterState state) {
-      // For the redirect logic, we just need to know if the user object exists.
-      final user = ref.read(authRepositoryProvider).currentUser;
-      final loggedIn = user != null;
-
+      final loggedIn = ref.read(authRepositoryProvider).currentUser != null;
       final onAuthRoute = state.matchedLocation == '/signin' || state.matchedLocation == '/signup';
 
-      // If user is not logged in and not on an auth route, redirect to signin.
-      if (!loggedIn && !onAuthRoute) {
-        return '/signin';
-      }
+      if (!loggedIn && !onAuthRoute) return '/signin';
+      if (loggedIn && onAuthRoute) return '/home';
 
-      // If user is logged in and tries to go to an auth route, redirect to home.
-      if (loggedIn && onAuthRoute) {
-        return '/home';
-      }
-
-      // Otherwise, no redirect is needed.
       return null;
     },
     routes: [
@@ -46,19 +37,35 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state, navigationShell) => ScaffoldWithNestedNavigation(navigationShell: navigationShell),
         branches: [
           StatefulShellBranch(
-            navigatorKey: _shellNavigatorAKey,
+            navigatorKey: _shellNavigatorHomeKey,
             routes: [
               GoRoute(path: '/home', name: 'home', pageBuilder: (context, state) => const NoTransitionPage(child: HomeScreen())),
             ],
           ),
           StatefulShellBranch(
-            navigatorKey: _shellNavigatorBKey,
+            navigatorKey: _shellNavigatorCommunityKey,
+            routes: [
+              GoRoute(
+                  path: '/community', name: 'community',
+                  pageBuilder: (context, state) => const NoTransitionPage(child: CommunityScreen()),
+                  routes: [
+                    GoRoute(
+                      path: 'post/:postId', name: 'postDetails',
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => PostDetailsScreen(postId: state.pathParameters['postId']!),
+                    )
+                  ]
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorLibraryKey,
             routes: [
               GoRoute(path: '/library', name: 'library', pageBuilder: (context, state) => const NoTransitionPage(child: LibraryScreen())),
             ],
           ),
           StatefulShellBranch(
-            navigatorKey: _shellNavigatorCKey,
+            navigatorKey: _shellNavigatorProfileKey,
             routes: [
               GoRoute(path: '/profile', name: 'profile', pageBuilder: (context, state) => const NoTransitionPage(child: ProfileScreen())),
             ],
@@ -84,11 +91,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
+      GoRoute(
+        path: '/create-post', name: 'createPost',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (BuildContext context, GoRouterState state) {
+          final bookCitation = state.extra as Map<String, dynamic>?;
+          return CreatePostScreen(bookCitation: bookCitation);
+        },
+      ),
     ],
   );
 });
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _shellNavigatorAKey = GlobalKey<NavigatorState>(debugLabel: 'shellA');
-final _shellNavigatorBKey = GlobalKey<NavigatorState>(debugLabel: 'shellB');
-final _shellNavigatorCKey = GlobalKey<NavigatorState>(debugLabel: 'shellC');
+final _shellNavigatorHomeKey = GlobalKey<NavigatorState>(debugLabel: 'shellHome');
+final _shellNavigatorCommunityKey = GlobalKey<NavigatorState>(debugLabel: 'shellCommunity');
+final _shellNavigatorLibraryKey = GlobalKey<NavigatorState>(debugLabel: 'shellLibrary');
+final _shellNavigatorProfileKey = GlobalKey<NavigatorState>(debugLabel: 'shellProfile');
+

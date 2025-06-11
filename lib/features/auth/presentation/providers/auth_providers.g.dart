@@ -7,7 +7,7 @@ part of 'auth_providers.dart';
 // **************************************************************************
 
 String _$firebaseAuthDataSourceHash() =>
-    r'7be749bb2ddc3e7888bc1ff99a05074a4f7664b3';
+    r'604834acd7bd8b3e87b3bca121b40bd23b382dca';
 
 /// See also [firebaseAuthDataSource].
 @ProviderFor(firebaseAuthDataSource)
@@ -26,7 +26,7 @@ final firebaseAuthDataSourceProvider =
 // ignore: unused_element
 typedef FirebaseAuthDataSourceRef
     = AutoDisposeProviderRef<FirebaseAuthDataSource>;
-String _$authRepositoryHash() => r'0ae6c7424c6649ae346310d50bf56903527fa3f8';
+String _$authRepositoryHash() => r'3fd6a66cd3fc557707526025092c3b3b27f2cd17';
 
 /// See also [authRepository].
 @ProviderFor(authRepository)
@@ -43,7 +43,7 @@ final authRepositoryProvider = AutoDisposeProvider<AuthRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AuthRepositoryRef = AutoDisposeProviderRef<AuthRepository>;
-String _$authStateChangesHash() => r'2b7cdea91185426216b913040c54b42cca155f4c';
+String _$authStateChangesHash() => r'5fe014d44ca054dc27251503226ac6baabd4c204';
 
 /// See also [authStateChanges].
 @ProviderFor(authStateChanges)

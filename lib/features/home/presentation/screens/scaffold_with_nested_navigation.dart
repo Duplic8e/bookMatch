@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-// This screen is a "shell" that wraps the main sections of the app
-// which share a BottomNavigationBar.
 class ScaffoldWithNestedNavigation extends StatelessWidget {
   const ScaffoldWithNestedNavigation({
     Key? key,
@@ -14,7 +12,6 @@ class ScaffoldWithNestedNavigation extends StatelessWidget {
   void _goBranch(int index) {
     navigationShell.goBranch(
       index,
-      // Navigate to the initial location when tapping the item that is already active
       initialLocation: index == navigationShell.currentIndex,
     );
   }
@@ -22,23 +19,32 @@ class ScaffoldWithNestedNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // The body is the screen currently selected by the BottomNavigationBar
       body: navigationShell,
       bottomNavigationBar: BottomNavigationBar(
+        // Set type to fixed to ensure all labels are visible
+        type: BottomNavigationBarType.fixed,
         currentIndex: navigationShell.currentIndex,
         onTap: _goBranch,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
             label: 'Home',
           ),
-          // Placeholder for Library screen
+          // ** NEW: Community Tab **
           BottomNavigationBarItem(
-            icon: Icon(Icons.book_online),
+            icon: Icon(Icons.group_outlined),
+            activeIcon: Icon(Icons.group),
+            label: 'Community',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.collections_bookmark_outlined),
+            activeIcon: Icon(Icons.collections_bookmark),
             label: 'My Library',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
             label: 'Profile',
           ),
         ],
