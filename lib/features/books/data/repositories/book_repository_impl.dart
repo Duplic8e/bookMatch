@@ -1,64 +1,69 @@
-// lib/features/books/data/repositories/book_repository_impl.dart
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mobile_app_project_bookstore/features/books/domain/entities/book.dart';
 import 'package:mobile_app_project_bookstore/features/books/domain/repositories/book_repository.dart';
 
 class BookRepositoryImpl implements BookRepository {
-  final List<Book> _mockBooks = [
-    Book(
-        id: '1',
-        title: 'The Great Flutterby',
-        author: 'Dev Eloper',
-        coverImageUrl: 'https://picsum.photos/seed/book1/200/300',
-        description: 'A thrilling adventure in the world of widgets.',
-        price: 19.99,
-        genres: ['Tech', 'Fiction']),
-    Book(
-        id: '2',
-        title: 'Riverpod State Management',
-        author: 'R. Iver Pod',
-        coverImageUrl: 'https://picsum.photos/seed/book2/200/300',
-        description: 'Master the art of state management in Flutter.',
-        price: 29.99,
-        genres: ['Tech', 'Education']),
-    Book(
-        id: '3',
-        title: 'Dart for Beginners',
-        author: 'A. Programmer',
-        coverImageUrl: 'https://picsum.photos/seed/book3/200/300',
-        description:
-        'Learn the fundamentals of the Dart programming language.',
-        price: 15.00,
-        genres: ['Tech', 'Education']),
-    Book(
-        id: '4',
-        title: 'Mystery of the Missing Semicolon',
-        author: 'Syntax Errorian',
-        coverImageUrl: 'https://picsum.photos/seed/book4/200/300',
-        description: 'A classic coding whodunit.',
-        price: 12.50,
-        genres: ['Mystery', 'Tech']),
-  ];
+  final FirebaseFirestore firestore;
+
+  BookRepositoryImpl(this.firestore);
 
   @override
   Future<List<Book>> fetchAllBooks() async {
-    await Future.delayed(const Duration(seconds: 1));
-    return _mockBooks;
+    final snapshot = await firestore.collection('books').get();
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      return Book(
+        id: doc.id,
+        title: data['title'] ?? '',
+        author: (data['authors'] as List?)?.first ?? '',
+        coverImageUrl: data['coverImageUrl'] ?? '',
+        description: data['description'] ?? '',
+        price: (data['price'] as num?)?.toDouble() ?? 0.0,
+        genres: List<String>.from(data['genres'] ?? []),
+        tags: List<String>.from(data['tags'] ?? []),
+        categories: List<String>.from(data['categories'] ?? []),
+      );
+    }).toList();
   }
 
   @override
   Future<Book?> fetchBookById(String id) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    try {
-      return _mockBooks.firstWhere((book) => book.id == id);
-    } catch (e) {
-      return null;
-    }
+    final doc = await firestore.collection('books').doc(id).get();
+    if (!doc.exists) return null;
+    final data = doc.data()!;
+    return Book(
+      id: doc.id,
+      title: data['title'] ?? '',
+      author: (data['authors'] as List?)?.first ?? '',
+      coverImageUrl: data['coverImageUrl'] ?? '',
+      description: data['description'] ?? '',
+      price: (data['price'] as num?)?.toDouble() ?? 0.0,
+      genres: List<String>.from(data['genres'] ?? []),
+      tags: List<String>.from(data['tags'] ?? []),
+      categories: List<String>.from(data['categories'] ?? []),
+    );
   }
 
   @override
   Future<List<Book>> fetchBooksByGenre(String genre) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    return _mockBooks.where((book) => book.genres.contains(genre)).toList();
+    final snapshot = await firestore
+        .collection('books')
+        .where('genres', arrayContains: genre)
+        .get();
+
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      return Book(
+        id: doc.id,
+        title: data['title'] ?? '',
+        author: (data['authors'] as List?)?.first ?? '',
+        coverImageUrl: data['coverImageUrl'] ?? '',
+        description: data['description'] ?? '',
+        price: (data['price'] as num?)?.toDouble() ?? 0.0,
+        genres: List<String>.from(data['genres'] ?? []),
+        tags: List<String>.from(data['tags'] ?? []),
+        categories: List<String>.from(data['categories'] ?? []),
+      );
+    }).toList();
   }
 }

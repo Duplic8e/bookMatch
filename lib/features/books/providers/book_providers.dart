@@ -4,11 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_app_project_bookstore/features/books/data/repositories/book_repository_impl.dart';
 import 'package:mobile_app_project_bookstore/features/books/domain/entities/book.dart';
 import 'package:mobile_app_project_bookstore/features/books/domain/repositories/book_repository.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Provider for the BookRepository implementation
 final bookRepositoryProvider = Provider<BookRepository>((ref) {
-  return BookRepositoryImpl();
+  return BookRepositoryImpl(FirebaseFirestore.instance);
 });
+
 
 // Provider to fetch all books
 final allBooksProvider = FutureProvider<List<Book>>((ref) async {
