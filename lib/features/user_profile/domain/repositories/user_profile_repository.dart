@@ -1,9 +1,8 @@
 abstract class UserProfileRepository {
   Future<void> createUserProfile({
-    required String userId,
+    required String uid,
     required String email,
-    required Set<String> preferences,
+    required String displayName,
+    required List<String> favoriteGenres,
   });
-// Future<UserProfile?> getUserProfile(String userId);
-// Future<void> updateUserProfile(String userId, Map<String, dynamic> data);
 }

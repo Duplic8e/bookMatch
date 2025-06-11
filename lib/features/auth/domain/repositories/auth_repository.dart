@@ -1,19 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart' as firebase_auth; // Alias
+import 'package:firebase_auth/firebase_auth.dart';
 
 abstract class AuthRepository {
-  Future<firebase_auth.User?> signUpWithEmailAndPassword({ // Use alias
-    required String email,
-    required String password,
-    required Set<String> preferences,
-  });
+  Stream<User?> get authStateChanges;
 
-  Future<firebase_auth.User?> signInWithEmailAndPassword({ // Use alias
-    required String email,
-    required String password,
-  });
+  Future<UserCredential> createUserWithEmailAndPassword(String email, String password);
+
+  Future<UserCredential> signInWithEmailAndPassword(String email, String password);
 
   Future<void> signOut();
-
-  Stream<firebase_auth.User?> get authStateChanges; // Use alias
-  firebase_auth.User? get currentUser; // Use alias
 }

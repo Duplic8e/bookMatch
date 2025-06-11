@@ -1,67 +1,37 @@
-import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 class FirebaseAuthDataSource {
-  final firebase_auth.FirebaseAuth _firebaseAuth;
+  final FirebaseAuth _firebaseAuth;
 
-  FirebaseAuthDataSource({firebase_auth.FirebaseAuth? firebaseAuth})
-      : _firebaseAuth = firebaseAuth ?? firebase_auth.FirebaseAuth.instance;
+  FirebaseAuthDataSource(this._firebaseAuth);
 
-  Future<firebase_auth.User?> signUpWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {
+  Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
+
+  Future<UserCredential> signInWithEmailAndPassword(String email, String password) async {
     try {
-      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      return userCredential.user;
-    } on firebase_auth.FirebaseAuthException catch (e) {
-      // Consider more specific error handling based on e.code
-      print("FirebaseAuthException on sign up: ${e.message} (code: ${e.code})");
-      throw Exception(e.message ?? 'An unknown authentication error occurred.');
-    } catch (e) {
-      print("Unknown exception on sign up: $e");
-      throw Exception('An unknown error occurred during sign up.');
+      return await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
+    } on FirebaseAuthException catch (e) {
+      debugPrint('Firebase Auth Exception on Sign In: ${e.code} - ${e.message}');
+      rethrow;
     }
   }
 
-  Future<firebase_auth.User?> signInWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {
+  Future<UserCredential> createUserWithEmailAndPassword(String email, String password) async {
     try {
-      final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      return userCredential.user;
-    } on firebase_auth.FirebaseAuthException catch (e) {
-      print("FirebaseAuthException on sign in: ${e.message} (code: ${e.code})");
-      if (e.code == 'user-not-found' || e.code == 'wrong-password' || e.code == 'invalid-credential' || e.code == 'INVALID_LOGIN_CREDENTIALS') { // Added common new code
-        throw Exception('Invalid email or password.');
-      }
-      throw Exception(e.message ?? 'An unknown authentication error occurred.');
-    } catch (e) {
-      print("Unknown exception on sign in: $e");
-      throw Exception('An unknown error occurred during sign in.');
+      return await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
+    } on FirebaseAuthException catch (e) {
+      debugPrint('Firebase Auth Exception on Sign Up: ${e.code} - ${e.message}');
+      rethrow;
     }
   }
 
   Future<void> signOut() async {
     try {
-      print("FirebaseAuthDataSource: Attempting to sign out.");
       await _firebaseAuth.signOut();
-      print("FirebaseAuthDataSource: Sign out successful.");
-    } catch (e) {
-      print("Unknown exception on sign out: $e");
-      // Depending on app requirements, you might rethrow or handle differently
+    } on FirebaseAuthException catch (e) {
+      debugPrint('Firebase Auth Exception on Sign Out: ${e.code} - ${e.message}');
+      rethrow;
     }
   }
-
-  // --- ENSURE THESE ARE EXACTLY AS FOLLOWS ---
-  Stream<firebase_auth.User?> get authStateChanges => _firebaseAuth.authStateChanges();
-
-  firebase_auth.User? get currentUser => _firebaseAuth.currentUser;
-  // --- END OF CHECK ---
 }

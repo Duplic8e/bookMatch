@@ -11,10 +11,11 @@ import 'package:mobile_app_project_bookstore/features/home/presentation/screens/
 import 'package:mobile_app_project_bookstore/features/home/presentation/screens/scaffold_with_nested_navigation.dart';
 import 'package:mobile_app_project_bookstore/features/library/presentation/screens/library_screen.dart';
 import 'package:mobile_app_project_bookstore/features/cart/presentation/screens/cart_screen.dart';
-import 'package:mobile_app_project_bookstore/Core/navigation/go_router_refresh_stream.dart';
+import 'package:mobile_app_project_bookstore/core/navigation/go_router_refresh_stream.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
-  final authStream = ref.watch(authStateChangesProvider.stream);
+  // ** FIX: Use the new raw stream provider **
+  final authStream = ref.watch(authStateStreamProvider);
 
   return GoRouter(
     initialLocation: '/home',
@@ -48,9 +49,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 final url = args?['url'] as String?;
                 final title = args?['title'] as String?;
                 final initialPage = args?['initialPage'] as int? ?? 1;
-                // ** CHANGE: Read the new flag from the arguments **
                 final isFromLibrary = args?['isFromLibrary'] as bool? ?? false;
-
                 return BookPreviewScreen(
                   bookId: bookId,
                   pdfUrl: url ?? '',
@@ -108,7 +107,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
     ],
     redirect: (BuildContext context, GoRouterState state) {
-      final isLoggedIn = ref.read(authStateChangesProvider).value != null;
+      final isLoggedIn = ref.read(currentUserProvider) != null;
       final onAuthScreens = state.matchedLocation == '/signin' || state.matchedLocation == '/signup';
 
       if (!isLoggedIn && !onAuthScreens) {
