@@ -10,7 +10,7 @@ int scoreBook(Book book, String query, {double? maxPrice}) {
 
   for (final token in tokens) {
     if (book.title.toLowerCase().contains(token)) score += 2;
-    if (book.author.toLowerCase().contains(token)) score += 5;
+    if (book.authors.any((author) => author.toLowerCase().contains(token))) score += 5;
     if (book.genres.any((genre) => genre.toLowerCase().contains(token))) score += 2;
     if (book.tags.any((tag) => tag.toLowerCase().contains(token))) score += 2;
     if (book.categories.any((cat) => cat.toLowerCase().contains(token))) score += 2;

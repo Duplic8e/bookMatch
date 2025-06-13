@@ -13,24 +13,32 @@ class SearchRepository {
 
     final books = snapshot.docs.map((doc) {
       final data = doc.data();
+
       return Book(
         id: doc.id,
         title: data['title'] ?? '',
-        author: (data['authors'] as List?)?.first ?? '', // Firestore uses `authors`
-        coverImageUrl: data['coverImageUrl'] ?? '',
+        authors: List<String>.from(data['authors'] ?? []),
         description: data['description'] ?? '',
+        categories: List<String>.from(data['categories'] ?? []),
+        tags: List<String>.from(data['tags'] ?? []),
+        publishedYear: data['publishedYear'] ?? 0,
+        pageCount: data['pageCount'] ?? 0,
+        coverImageUrl: data['coverImageUrl'] ?? '',
+        pdfUrl: data['pdfUrl'] ?? '',
+        averageRating: (data['averageRating'] as num?)?.toDouble() ?? 0.0,
+        ratingsCount: data['ratingsCount'] ?? 0,
         price: (data['price'] as num?)?.toDouble() ?? 0.0,
         genres: List<String>.from(data['genres'] ?? []),
-        tags: List<String>.from(data['tags'] ?? []),
-        categories: List<String>.from(data['categories'] ?? []),
       );
-
     }).toList();
 
-    final results = books.map((book) {
+    final results = books
+        .map((book) {
       final score = scoreBook(book, query, maxPrice: maxPrice);
       return ScoredBook(book: book, score: score);
-    }).where((sb) => sb.score >= 2).toList();
+    })
+        .where((sb) => sb.score >= 2)
+        .toList();
 
     results.sort((a, b) => b.score.compareTo(a.score));
     return results;

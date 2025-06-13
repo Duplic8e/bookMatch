@@ -24,7 +24,7 @@ class SearchResultsScreen extends ConsumerWidget {
               final book = results[index].book;
               return ListTile(
                 title: Text(book.title),
-                subtitle: Text(book.author),
+                subtitle: Text(book.authors.join(', ')),
                 trailing: Text('\$${book.price.toStringAsFixed(2)}'),
                 onTap: () {
                   context.push('/books/${book.id}');
