@@ -22,7 +22,7 @@ class Book extends Equatable {
     required this.id,
     required this.title,
     required this.authors,
-    required this.description = 'No description available.',
+    required this.description,
     required this.categories,
     required this.tags,
     required this.publishedYear,
@@ -31,6 +31,8 @@ class Book extends Equatable {
     required this.pdfUrl,
     required this.averageRating,
     required this.ratingsCount,
+    required this.price,
+    required this.genres,
   });
 
   @override

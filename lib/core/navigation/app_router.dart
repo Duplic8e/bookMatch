@@ -37,7 +37,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           path: '/books/:bookId',
           builder: (context, state) {
             final bookId = state.pathParameters['bookId']!;
-            return BookDetailScreen(bookId: bookId);
+            final extras = state.extra as Map<String, dynamic>?;
+            return BookDetailScreen(bookId: bookId, extras: extras);
           },
           routes: [
             GoRoute(
@@ -56,7 +57,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                   bookTitle: title ?? 'PDF',
                   initialPage: initialPage,
                   isFromLibrary: isFromLibrary,
-                  extras: state.extra as Map<String, dynamic>?,
                 );
               },
             ),
