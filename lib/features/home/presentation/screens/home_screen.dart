@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_app_project_bookstore/features/auth/presentation/providers/auth_providers.dart';
 import 'package:mobile_app_project_bookstore/features/books/presentation/providers/book_providers.dart';
+import 'package:mobile_app_project_bookstore/features/search/screens/search_overlay.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
