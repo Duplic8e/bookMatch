@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Library-inspired palette
@@ -6,32 +7,22 @@ class AppTheme {
   static const Color _woodColor   = Color(0xFF8B5E3C);
   static const Color _accentColor = Color(0xFFD9B382);
 
-  // Your font family (as declared in pubspec.yaml)
+  // Your display font
   static const String _fontFamily = 'Ancient Medium';
 
   /// Light theme for library look
   static ThemeData get lightTheme {
-    return ThemeData(
-      // ← Set it here in the constructor
+    final base = ThemeData.light();
+    return base.copyWith(
       fontFamily: _fontFamily,
-      brightness: Brightness.light,
       scaffoldBackgroundColor: _bgColor,
-      primaryColor: _woodColor,
-
-      colorScheme: const ColorScheme.light(
+      colorScheme: base.colorScheme.copyWith(
         primary: _woodColor,
-        onPrimary: Colors.white,
         secondary: _accentColor,
-        onSecondary: Colors.white,
         background: _bgColor,
-        onBackground: _woodColor,
         surface: Colors.white,
-        onSurface: _woodColor,
         error: Colors.redAccent,
-        onError: Colors.white,
       ),
-
-      // Default icon tint (won’t affect your Image.asset PNGs)
       iconTheme: const IconThemeData(color: _woodColor),
 
       appBarTheme: const AppBarTheme(
@@ -39,7 +30,7 @@ class AppTheme {
         elevation: 0,
         iconTheme: IconThemeData(color: _woodColor),
         titleTextStyle: TextStyle(
-          fontFamily: _fontFamily,      // also specify on individual TextStyles
+          fontFamily: _fontFamily,
           color: _woodColor,
           fontSize: 20,
           fontWeight: FontWeight.w600,
@@ -109,25 +100,17 @@ class AppTheme {
 
   /// Dark theme fallback (optional)
   static ThemeData get darkTheme {
-    return ThemeData(
+    final base = ThemeData.dark();
+    return base.copyWith(
       fontFamily: _fontFamily,
-      brightness: Brightness.dark,
-      primaryColor: Colors.teal,
       scaffoldBackgroundColor: Colors.grey[900],
-
-      colorScheme: ColorScheme.dark(
+      colorScheme: base.colorScheme.copyWith(
         primary: Colors.teal,
-        onPrimary: Colors.white,
         secondary: _accentColor,
-        onSecondary: Colors.white,
         background: Colors.grey[900]!,
-        onBackground: Colors.white70,
         surface: Colors.grey[800]!,
-        onSurface: Colors.white,
         error: Colors.redAccent,
-        onError: Colors.white,
       ),
-
       iconTheme: const IconThemeData(color: Colors.white),
 
       appBarTheme: AppBarTheme(
@@ -183,7 +166,8 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.teal,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           textStyle: const TextStyle(
             fontFamily: _fontFamily,
             fontSize: 16,
@@ -199,4 +183,14 @@ class AppTheme {
       ),
     );
   }
+
+  /// A ready-to-use Merriweather TextTheme
+  static TextTheme get merriweatherTextTheme {
+    return GoogleFonts.merriweatherTextTheme(lightTheme.textTheme);
+  }
+}
+
+/// Extension on BuildContext for convenience
+extension MerriweatherStyles on BuildContext {
+  TextTheme get merriweather => AppTheme.merriweatherTextTheme;
 }
