@@ -13,9 +13,13 @@ class AppTheme {
   /// Light theme for library look
   static ThemeData get lightTheme {
     final base = ThemeData.light();
-    return base.copyWith(
+    return ThemeData(
+      // ← Set fontFamily here, in the constructor
       fontFamily: _fontFamily,
+      brightness: Brightness.light,
       scaffoldBackgroundColor: _bgColor,
+      primaryColor: _woodColor,
+
       colorScheme: base.colorScheme.copyWith(
         primary: _woodColor,
         secondary: _accentColor,
@@ -23,6 +27,7 @@ class AppTheme {
         surface: Colors.white,
         error: Colors.redAccent,
       ),
+
       iconTheme: const IconThemeData(color: _woodColor),
 
       appBarTheme: const AppBarTheme(
@@ -98,21 +103,21 @@ class AppTheme {
     );
   }
 
-  /// Dark theme fallback (optional)
+  /// Dark theme fallback
   static ThemeData get darkTheme {
-    final base = ThemeData.dark();
-    return base.copyWith(
+    return ThemeData(
       fontFamily: _fontFamily,
+      brightness: Brightness.dark,
+      primaryColor: Colors.teal,
       scaffoldBackgroundColor: Colors.grey[900],
-      colorScheme: base.colorScheme.copyWith(
-        primary: Colors.teal,
-        secondary: _accentColor,
-        background: Colors.grey[900]!,
-        surface: Colors.grey[800]!,
-        error: Colors.redAccent,
-      ),
+      colorScheme: ThemeData.dark().colorScheme.copyWith(
+            primary: Colors.teal,
+            secondary: _accentColor,
+            background: Colors.grey[900]!,
+            surface: Colors.grey[800]!,
+            error: Colors.redAccent,
+          ),
       iconTheme: const IconThemeData(color: Colors.white),
-
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.grey[850],
         iconTheme: const IconThemeData(color: Colors.white),
@@ -123,7 +128,6 @@ class AppTheme {
           fontWeight: FontWeight.w600,
         ),
       ),
-
       textTheme: const TextTheme(
         titleLarge: TextStyle(
           fontFamily: _fontFamily,
@@ -148,7 +152,6 @@ class AppTheme {
           fontSize: 14,
         ),
       ),
-
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.grey[800],
@@ -161,7 +164,6 @@ class AppTheme {
           borderSide: BorderSide.none,
         ),
       ),
-
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.teal,
@@ -175,7 +177,6 @@ class AppTheme {
           ),
         ),
       ),
-
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: Colors.black,
         selectedItemColor: Colors.teal,
@@ -184,13 +185,14 @@ class AppTheme {
     );
   }
 
-  /// A ready-to-use Merriweather TextTheme
+  /// Merriweather TextTheme you can pull from anywhere
   static TextTheme get merriweatherTextTheme {
     return GoogleFonts.merriweatherTextTheme(lightTheme.textTheme);
   }
 }
 
-/// Extension on BuildContext for convenience
+/// Extension on BuildContext for convenience:
+///   context.merriweather.titleMedium
 extension MerriweatherStyles on BuildContext {
   TextTheme get merriweather => AppTheme.merriweatherTextTheme;
 }
