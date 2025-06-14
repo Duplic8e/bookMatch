@@ -53,7 +53,7 @@ class _SubmitReviewFormState extends ConsumerState<SubmitReviewForm> {
         ref.invalidate(bookReviewsProvider(widget.bookId));
         ref.invalidate(bookDetailProvider(widget.bookId));
 
-        if(mounted) {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Review submitted successfully!')),
           );
@@ -61,15 +61,13 @@ class _SubmitReviewFormState extends ConsumerState<SubmitReviewForm> {
           setState(() => _currentRating = 3.0);
         }
       } catch (e) {
-        if(mounted) {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Failed to submit review: $e')),
           );
         }
       } finally {
-        if (mounted) {
-          setState(() => _isSubmitting = false);
-        }
+        if (mounted) setState(() => _isSubmitting = false);
       }
     }
   }
@@ -97,9 +95,23 @@ class _SubmitReviewFormState extends ConsumerState<SubmitReviewForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text('Leave your review', style: Theme.of(context).textTheme.titleMedium),
+          // Heading less bold
+          Text(
+            'Leave your review',
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: FontWeight.w400),
+          ),
           const SizedBox(height: 12),
-          Text('Rating: ${_currentRating.toStringAsFixed(1)}', style: Theme.of(context).textTheme.bodyLarge),
+          // Rating label less bold
+          Text(
+            'Rating: ${_currentRating.toStringAsFixed(1)}',
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(fontWeight: FontWeight.w400),
+          ),
           Slider(
             value: _currentRating,
             min: 1,
@@ -111,9 +123,13 @@ class _SubmitReviewFormState extends ConsumerState<SubmitReviewForm> {
           const SizedBox(height: 12),
           TextFormField(
             controller: _commentController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Your Comment',
-              border: OutlineInputBorder(),
+              labelStyle: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(fontWeight: FontWeight.w400),
+              border: const OutlineInputBorder(),
               alignLabelWithHint: true,
             ),
             maxLines: 3,
@@ -131,13 +147,13 @@ class _SubmitReviewFormState extends ConsumerState<SubmitReviewForm> {
           _isSubmitting
               ? const Center(child: CircularProgressIndicator())
               : ElevatedButton.icon(
-            icon: const Icon(Icons.send),
-            label: const Text('Submit Review'),
-            onPressed: _submitReview,
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 48),
-            ),
-          ),
+                  icon: const Icon(Icons.send),
+                  label: const Text('Submit Review'),
+                  onPressed: _submitReview,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 48),
+                  ),
+                ),
         ],
       ),
     );
