@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_app_project_bookstore/features/library/presentation/providers/library_providers.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+
+import 'package:mobile_app_project_bookstore/features/library/presentation/providers/library_providers.dart';
 
 class LibraryScreen extends ConsumerWidget {
   const LibraryScreen({super.key});
@@ -22,7 +23,8 @@ class LibraryScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.collections_bookmark_outlined, size: 80, color: Colors.grey),
+                  Icon(Icons.collections_bookmark_outlined,
+                      size: 80, color: Colors.grey),
                   SizedBox(height: 16),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 40.0),
@@ -36,20 +38,24 @@ class LibraryScreen extends ConsumerWidget {
               ),
             );
           }
+
           return ListView.builder(
             itemCount: entries.length,
             itemBuilder: (context, index) {
               final entry = entries[index];
               final book = entry.book;
+
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(12),
                   leading: Image.network(
                     book.coverImageUrl,
                     width: 50,
                     fit: BoxFit.cover,
-                    errorBuilder: (ctx, err, stack) => const Icon(Icons.book, size: 50),
+                    errorBuilder: (ctx, err, stack) =>
+                        const Icon(Icons.book, size: 50),
                   ),
                   title: Text(book.title),
                   subtitle: Column(
@@ -57,25 +63,34 @@ class LibraryScreen extends ConsumerWidget {
                     children: [
                       Text(book.authors.join(', ')),
                       const SizedBox(height: 12),
-                      LinearPercentIndicator(
-                        padding: EdgeInsets.zero,
-                        percent: entry.readingProgress,
-                        lineHeight: 8.0,
-                        barRadius: const Radius.circular(4),
-                        backgroundColor: Colors.grey[300],
-                        progressColor: Colors.blueAccent,
-                        trailing: Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Text("${(entry.readingProgress * 100).toStringAsFixed(0)}%"),
-                        ),
+
+                      // ← Fixed progress bar layout
+                      Row(
+                        children: [
+                          Expanded(
+                            child: LinearPercentIndicator(
+                              padding: EdgeInsets.zero,
+                              percent: entry.readingProgress,
+                              lineHeight: 8.0,
+                              barRadius: const Radius.circular(4),
+                              backgroundColor: Colors.grey[300]!,
+                              progressColor:
+                                  Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            "${(entry.readingProgress * 100).toStringAsFixed(0)}%",
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
                       ),
                     ],
                   ),
                   onTap: () {
                     context.pushNamed(
                       'bookPreview',
-                      // ** THE FIX: The parameter name must be 'id' to match the route path. **
-                      pathParameters: {'id': book.id},
+                      pathParameters: {'bookId': book.id},
                       extra: {
                         'url': book.pdfUrl,
                         'title': book.title,
@@ -90,7 +105,8 @@ class LibraryScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error loading library: $err')),
+        error: (err, stack) =>
+            Center(child: Text('Error loading library: $err')),
       ),
     );
   }
