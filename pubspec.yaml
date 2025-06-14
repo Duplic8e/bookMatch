@@ -56,6 +56,8 @@ dependencies:
   shared_preferences: ^2.2.2
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0
+  font_awesome_flutter: ^10.4.0
+  google_fonts: ^4.0.3
 
 dev_dependencies:
   flutter_test:
@@ -77,6 +79,14 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - lib/features/home/assets/
+    - lib/features/auth/assets/
+    - lib/features/books/assets/
+  fonts:
+    - family: Ancient Medium
+      fonts:
+        - asset: lib/features/home/assets/fonts/Ancient Medium.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:
