@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
 import 'package:mobile_app_project_bookstore/features/library/presentation/providers/library_providers.dart';
@@ -14,7 +15,12 @@ class LibraryScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Library'),
+        title: Text(
+          'My Library',
+          style: GoogleFonts.merriweather(
+            textStyle: Theme.of(context).textTheme.titleLarge,
+          ),
+        ),
       ),
       body: libraryAsyncValue.when(
         data: (entries) {
@@ -46,25 +52,40 @@ class LibraryScreen extends ConsumerWidget {
               final book = entry.book;
 
               return Card(
+                color: Theme.of(context).colorScheme.surface,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 margin:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(12),
-                  leading: Image.network(
-                    book.coverImageUrl,
-                    width: 50,
-                    fit: BoxFit.cover,
-                    errorBuilder: (ctx, err, stack) =>
-                        const Icon(Icons.book, size: 50),
+                  leading: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: Image.network(
+                      book.coverImageUrl,
+                      width: 50,
+                      fit: BoxFit.cover,
+                      errorBuilder: (ctx, err, stack) =>
+                          const Icon(Icons.book, size: 50),
+                    ),
                   ),
-                  title: Text(book.title),
+                  title: Text(
+                    book.title,
+                    style: GoogleFonts.merriweather(
+                      textStyle: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(book.authors.join(', ')),
+                      Text(
+                        book.authors.join(', '),
+                        style: GoogleFonts.merriweather(
+                          textStyle: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
                       const SizedBox(height: 12),
-
-                      // ← Fixed progress bar layout
                       Row(
                         children: [
                           Expanded(
@@ -81,7 +102,9 @@ class LibraryScreen extends ConsumerWidget {
                           const SizedBox(width: 8),
                           Text(
                             "${(entry.readingProgress * 100).toStringAsFixed(0)}%",
-                            style: Theme.of(context).textTheme.bodySmall,
+                            style: GoogleFonts.merriweather(
+                              textStyle: Theme.of(context).textTheme.bodySmall,
+                            ),
                           ),
                         ],
                       ),

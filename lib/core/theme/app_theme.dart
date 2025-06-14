@@ -14,7 +14,7 @@ class AppTheme {
   static ThemeData get lightTheme {
     final base = ThemeData.light();
     return ThemeData(
-      // ← Set fontFamily here, in the constructor
+      // Set default font family
       fontFamily: _fontFamily,
       brightness: Brightness.light,
       scaffoldBackgroundColor: _bgColor,
@@ -28,8 +28,10 @@ class AppTheme {
         error: Colors.redAccent,
       ),
 
+      // Icons default to wood color
       iconTheme: const IconThemeData(color: _woodColor),
 
+      // AppBar styling
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -42,6 +44,7 @@ class AppTheme {
         ),
       ),
 
+      // Text styling
       textTheme: const TextTheme(
         titleLarge: TextStyle(
           fontFamily: _fontFamily,
@@ -67,6 +70,7 @@ class AppTheme {
         ),
       ),
 
+      // Input fields
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
@@ -80,12 +84,14 @@ class AppTheme {
         ),
       ),
 
+      // Elevated buttons
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: _woodColor,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           textStyle: const TextStyle(
             fontFamily: _fontFamily,
             fontSize: 16,
@@ -94,11 +100,23 @@ class AppTheme {
         ),
       ),
 
+      // Bottom navigation bar
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: Colors.white,
         selectedItemColor: _woodColor,
         unselectedItemColor: _accentColor,
         showUnselectedLabels: true,
+      ),
+
+      // ← New: FAB uses woodColor/white
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: _woodColor,
+        foregroundColor: Colors.white,
+      ),
+
+      // ← New: Progress indicators tinted to woodColor
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: _woodColor,
       ),
     );
   }
