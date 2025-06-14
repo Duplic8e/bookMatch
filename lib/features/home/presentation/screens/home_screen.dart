@@ -174,6 +174,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     ),
                     const SizedBox(height: 16),
                     TextField(
+                      readOnly: true,
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (_) => const SearchOverlay(),
+                        );
+                      },
                       decoration: InputDecoration(
                         hintText: 'Search for books',
                         prefixIcon: Padding(
@@ -188,6 +196,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 24),
                     SizedBox(
                       height: 88,
