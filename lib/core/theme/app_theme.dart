@@ -1,93 +1,198 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
+  // Library-inspired palette
+  static const Color _bgColor     = Color(0xFFFAF7F1);
+  static const Color _woodColor   = Color(0xFF8B5E3C);
+  static const Color _accentColor = Color(0xFFD9B382);
+
+  // Your display font
+  static const String _fontFamily = 'Ancient Medium';
+
+  /// Light theme for library look
   static ThemeData get lightTheme {
+    final base = ThemeData.light();
     return ThemeData(
+      // ← Set fontFamily here, in the constructor
+      fontFamily: _fontFamily,
       brightness: Brightness.light,
-      primarySwatch: Colors.blue, // Or your preferred primary color
-      // Example: Customize AppBar
+      scaffoldBackgroundColor: _bgColor,
+      primaryColor: _woodColor,
+
+      colorScheme: base.colorScheme.copyWith(
+        primary: _woodColor,
+        secondary: _accentColor,
+        background: _bgColor,
+        surface: Colors.white,
+        error: Colors.redAccent,
+      ),
+
+      iconTheme: const IconThemeData(color: _woodColor),
+
       appBarTheme: const AppBarTheme(
-        elevation: 1,
-        backgroundColor: Colors.white, // Or Colors.blue
-        iconTheme: IconThemeData(color: Colors.black), // For icons like back arrow
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: IconThemeData(color: _woodColor),
         titleTextStyle: TextStyle(
-          color: Colors.black, // Title text color
+          fontFamily: _fontFamily,
+          color: _woodColor,
           fontSize: 20,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
         ),
       ),
-      // Example: Customize ElevatedButton
+
+      textTheme: const TextTheme(
+        titleLarge: TextStyle(
+          fontFamily: _fontFamily,
+          color: _woodColor,
+          fontSize: 30,
+          fontWeight: FontWeight.bold,
+        ),
+        titleMedium: TextStyle(
+          fontFamily: _fontFamily,
+          color: _woodColor,
+          fontSize: 23,
+          fontWeight: FontWeight.w400,
+        ),
+        bodyMedium: TextStyle(
+          fontFamily: _fontFamily,
+          color: _woodColor,
+          fontSize: 16,
+        ),
+        bodySmall: TextStyle(
+          fontFamily: _fontFamily,
+          color: _woodColor,
+          fontSize: 14,
+        ),
+      ),
+
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.white,
+        hintStyle: TextStyle(
+          fontFamily: _fontFamily,
+          color: _woodColor.withOpacity(0.6),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+      ),
+
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue, // Button background
-          foregroundColor: Colors.white, // Button text/icon color
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          backgroundColor: _woodColor,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: const TextStyle(
+            fontFamily: _fontFamily,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
-      // Example: Customize TextFormFields
-      inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.blue, width: 2),
-        ),
-        labelStyle: const TextStyle(color: Colors.blueGrey),
+
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: Colors.white,
+        selectedItemColor: _woodColor,
+        unselectedItemColor: _accentColor,
+        showUnselectedLabels: true,
       ),
-      // Add more customizations as needed
     );
   }
 
-  // --- THIS IS THE CRITICAL PART ---
+  /// Dark theme fallback
   static ThemeData get darkTheme {
     return ThemeData(
+      fontFamily: _fontFamily,
       brightness: Brightness.dark,
-      primarySwatch: Colors.teal, // Or your preferred dark theme primary color
-      scaffoldBackgroundColor: Colors.grey[900], // Dark background
-      // Example: Customize AppBar for dark theme
+      primaryColor: Colors.teal,
+      scaffoldBackgroundColor: Colors.grey[900],
+      colorScheme: ThemeData.dark().colorScheme.copyWith(
+            primary: Colors.teal,
+            secondary: _accentColor,
+            background: Colors.grey[900]!,
+            surface: Colors.grey[800]!,
+            error: Colors.redAccent,
+          ),
+      iconTheme: const IconThemeData(color: Colors.white),
       appBarTheme: AppBarTheme(
-        elevation: 1,
-        backgroundColor: Colors.grey[850], // Darker AppBar
-        iconTheme: const IconThemeData(color: Colors.white), // Icons
-        titleTextStyle: TextStyle(
-          color: Colors.white, // Title text
+        backgroundColor: Colors.grey[850],
+        iconTheme: const IconThemeData(color: Colors.white),
+        titleTextStyle: const TextStyle(
+          fontFamily: _fontFamily,
+          color: Colors.white,
           fontSize: 20,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
         ),
       ),
-      // Example: Customize ElevatedButton for dark theme
+      textTheme: const TextTheme(
+        titleLarge: TextStyle(
+          fontFamily: _fontFamily,
+          color: Colors.white,
+          fontSize: 26,
+          fontWeight: FontWeight.bold,
+        ),
+        titleMedium: TextStyle(
+          fontFamily: _fontFamily,
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+        bodyMedium: TextStyle(
+          fontFamily: _fontFamily,
+          color: Colors.white70,
+          fontSize: 16,
+        ),
+        bodySmall: TextStyle(
+          fontFamily: _fontFamily,
+          color: Colors.white70,
+          fontSize: 14,
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.grey[800],
+        hintStyle: const TextStyle(
+          fontFamily: _fontFamily,
+          color: Colors.white54,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+      ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.teal,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: const TextStyle(
+            fontFamily: _fontFamily,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
-      // Example: Customize TextFormFields for dark theme
-      inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade700),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.teal.shade300, width: 2),
-        ),
-        labelStyle: TextStyle(color: Colors.grey.shade400),
-        hintStyle: TextStyle(color: Colors.grey.shade500),
-        // Ensure text input color is also visible
-        fillColor: Colors.grey[800], // Optional: for filled variant
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: Colors.black,
+        selectedItemColor: Colors.teal,
+        unselectedItemColor: Colors.white54,
       ),
-      // Ensure text colors are legible in dark mode
-      textTheme: Typography.whiteMountainView.apply(
-        bodyColor: Colors.white70, // Default body text
-        displayColor: Colors.white, // Headlines
-      ),
-      // Add more customizations as needed
     );
   }
-  // --- END OF CRITICAL PART ---
+
+  /// Merriweather TextTheme you can pull from anywhere
+  static TextTheme get merriweatherTextTheme {
+    return GoogleFonts.merriweatherTextTheme(lightTheme.textTheme);
+  }
+}
+
+/// Extension on BuildContext for convenience:
+///   context.merriweather.titleMedium
+extension MerriweatherStyles on BuildContext {
+  TextTheme get merriweather => AppTheme.merriweatherTextTheme;
 }
