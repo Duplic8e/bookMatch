@@ -30,7 +30,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   // background animation
   double _scrollOffset = 0;
   late final AnimationController _pulseController;
-  late final Animation<double>  _pulseAnimation;
+  late final Animation<double> _pulseAnimation;
 
   @override
   void initState() {
@@ -46,7 +46,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       duration: const Duration(seconds: 6),
     )..repeat(reverse: true);
 
-    _pulseAnimation = Tween<double>(begin: .8, end: 1.2).animate(
+    _pulseAnimation = Tween<double>(begin: .85, end: 1.15).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
   }
@@ -79,37 +79,58 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   Widget build(BuildContext context) {
     final theme       = Theme.of(context);
-    final merri       = context.merriweather;          // <-- extension
+    final merri       = context.merriweather;         // extension from AppTheme
     final user        = ref.watch(authStateChangesProvider).valueOrNull;
     final authCtrl    = ref.watch(authControllerProvider);
     final currentMode = ref.watch(themeNotifierProvider);
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white.withOpacity(.8),
-        elevation: 0,
-        title: Text('Profile & Settings',
-            style: merri.titleMedium!
-                .copyWith(color: theme.colorScheme.onBackground)),
-      ),
+          backgroundColor: Colors.white.withOpacity(.85),
+          elevation: 0,
+          title: Text(
+            'Profile & Settings',
+            // use the Ancient-Medium style from your theme:
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium!                          // Ancient Medium font
+                .copyWith(color: Theme.of(context).colorScheme.primary),
+          ),
+        ),
       body: NotificationListener<ScrollNotification>(
         onNotification: _onScrollNotification,
         child: Stack(
           children: [
+            // main circular blobs
             _blob(
-              size: 250,
+              size: 260,
               color: theme.colorScheme.primary.withOpacity(.25),
-              top: -150 + _scrollOffset * .4,
-              left: -100 + _scrollOffset * .2,
+              top: -160 + _scrollOffset * .45,
+              left: -110 + _scrollOffset * .25,
               animated: true,
             ),
             _blob(
-              size: 300,
+              size: 320,
               color: theme.colorScheme.secondary.withOpacity(.20),
-              bottom: -180 + _scrollOffset * .15,
-              right: -80 + _scrollOffset * .1,
+              bottom: -190 + _scrollOffset * .18,
+              right: -90 + _scrollOffset * .12,
+            ),
+            // extra square blob
+            _square(
+              size: 190,
+              color: theme.colorScheme.primary.withOpacity(.18),
+              top: 230 - _scrollOffset * .35,
+              right: -70 + _scrollOffset * .18,
+            ),
+            // extra small circle
+            _blob(
+              size: 130,
+              color: theme.colorScheme.secondary.withOpacity(.22),
+              top: 500 - _scrollOffset * .28,
+              left: -60 + _scrollOffset * .18,
             ),
 
+            // content
             SingleChildScrollView(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Form(
@@ -127,7 +148,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               ScaleTransition(
                                 scale: _pulseAnimation,
                                 child: _circle(
-                                    120, theme.colorScheme.primary.withOpacity(.3)),
+                                    120, theme.colorScheme.primary.withOpacity(.30)),
                               ),
                               Hero(
                                 tag: 'profile-avatar',
@@ -139,8 +160,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                     (user.displayName?.isNotEmpty ?? false)
                                         ? user.displayName![0].toUpperCase()
                                         : user.email![0].toUpperCase(),
-                                    style: merri.titleLarge!
-                                        .copyWith(fontSize: 48),
+                                    style: merri.titleLarge!.copyWith(fontSize: 48),
                                   ),
                                 ),
                               ),
@@ -160,13 +180,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Center(
-                            child: Text(user.email!,
-                                style: theme.textTheme.bodyMedium)),
+                        Center(child: Text(user.email!, style: merri.bodyMedium)),
                         const SizedBox(height: 32),
                       ],
 
-                      // genre chips
                       Text('Favorite Genres', style: merri.titleLarge),
                       const Divider(),
                       AnimatedSwitcher(
@@ -176,17 +193,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           spacing: 8,
                           runSpacing: 8,
                           children: allGenres.map((g) {
-                            final selected = selectedGenres.contains(g);
+                            final sel = selectedGenres.contains(g);
                             return ChoiceChip(
-                              label: Text(
-                                g,
-                                style: merri.bodySmall!.copyWith(
-                                  color: selected
-                                      ? Colors.white
-                                      : theme.colorScheme.onSurface,
-                                ),
-                              ),
-                              selected: selected,
+                              label: Text(g,
+                                  style: merri.bodySmall!.copyWith(
+                                    color: sel
+                                        ? Colors.white
+                                        : theme.colorScheme.onSurface,
+                                  )),
+                              selected: sel,
                               backgroundColor: theme.colorScheme.surface,
                               selectedColor: theme.colorScheme.primary,
                               onSelected: (v) => setState(() => v
@@ -198,14 +213,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       ),
                       const SizedBox(height: 32),
 
-                      // settings
                       Text('Settings', style: merri.titleLarge),
                       const Divider(),
                       _themeCard(theme, merri, currentMode),
-                      _faqCard(merri),
+                      _faqCard(theme, merri),
                       const SizedBox(height: 32),
 
-                      // buttons
                       Row(
                         children: [
                           Expanded(
@@ -214,26 +227,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               icon: Icons.save,
                               label: 'Save',
                               isLoading: authCtrl.isLoading,
-                              onTap: () async {
-                                final name = _displayNameController.text.trim();
-                                if (user != null && name.isNotEmpty) {
-                                  await user.updateDisplayName(name);
-                                  await ref
-                                      .read(userProfileRepositoryProvider)
-                                      .createUserProfile(
-                                        uid: user.uid,
-                                        email: user.email!,
-                                        displayName: name,
-                                        favoriteGenres: selectedGenres,
-                                      );
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text('Profile updated')),
-                                    );
-                                  }
-                                }
-                              },
+                              onTap: () => _saveProfile(user, context),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -263,8 +257,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  // UI helper methods ---------------------------------------------------
+  // --- Helper widgets --------------------------------------------------
 
+  // circular or animated blob
   Widget _blob({
     required double size,
     required Color color,
@@ -279,15 +274,45 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         left: left,
         right: right,
         bottom: bottom,
-        child: animated ? ScaleTransition(scale: _pulseAnimation, child: _circle(size, color))
-                         : _circle(size, color),
+        child: animated
+            ? ScaleTransition(scale: _pulseAnimation, child: _circle(size, color))
+            : _circle(size, color),
       );
 
-  Widget _circle(double size, Color color) =>
-      Container(width: size, height: size, decoration: BoxDecoration(shape: BoxShape.circle, color: color));
+  // rotated square
+  Widget _square({
+    required double size,
+    required Color color,
+    double? top,
+    double? left,
+    double? right,
+    double? bottom,
+  }) =>
+      Positioned(
+        top: top,
+        left: left,
+        right: right,
+        bottom: bottom,
+        child: Transform.rotate(
+          angle: math.pi / 4,
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(24),
+            ),
+          ),
+        ),
+      );
+
+  // plain circle
+  Widget _circle(double s, Color c) =>
+      Container(width: s, height: s, decoration: BoxDecoration(shape: BoxShape.circle, color: c));
 
   Card _themeCard(ThemeData theme, TextTheme merri, ThemeMode current) =>
       Card(
+        color: theme.colorScheme.surface, // matches theme
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -297,7 +322,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               Text('Theme', style: merri.bodyLarge),
               Row(
                 children: ThemeMode.values.map((mode) {
-                  final sel  = mode == current;
+                  final sel = mode == current;
                   IconData ic = mode == ThemeMode.light
                       ? Icons.light_mode
                       : mode == ThemeMode.dark
@@ -319,7 +344,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ),
       );
 
-  Card _faqCard(TextTheme merri) => Card(
+  Card _faqCard(ThemeData theme, TextTheme merri) => Card(
+        color: theme.colorScheme.surface, // matches theme
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: ListTile(
           leading: const Icon(Icons.help_outline),
@@ -354,4 +380,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         style: ElevatedButton.styleFrom(backgroundColor: color),
         onPressed: isLoading ? null : onTap,
       );
+
+  Future<void> _saveProfile(User? user, BuildContext ctx) async {
+    final name = _displayNameController.text.trim();
+    if (user != null && name.isNotEmpty) {
+      await user.updateDisplayName(name);
+      await ref.read(userProfileRepositoryProvider).createUserProfile(
+            uid: user.uid,
+            email: user.email!,
+            displayName: name,
+            favoriteGenres: selectedGenres,
+          );
+      if (ctx.mounted) {
+        ScaffoldMessenger.of(ctx).showSnackBar(
+          const SnackBar(content: Text('Profile updated')),
+        );
+      }
+    }
+  }
 }
