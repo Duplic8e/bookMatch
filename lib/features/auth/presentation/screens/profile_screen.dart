@@ -30,7 +30,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   // animated background
   double _scrollOffset = 0;
   late final AnimationController _pulseController;
-  late final Animation<double>  _pulseAnimation;
+  late final Animation<double> _pulseAnimation;
 
   @override
   void initState() {
@@ -163,8 +163,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           children: [
             ScaleTransition(
               scale: _pulseAnimation,
-              child:
-                  _circle(120, theme.colorScheme.primary.withOpacity(.30)),
+              child: _circle(120, theme.colorScheme.primary.withOpacity(.30)),
             ),
             Hero(
               tag: 'profile-avatar',
@@ -263,8 +262,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             height: 28,
           ),
           title: Text('Help & FAQ', style: merri.bodyLarge),
-          onTap: () =>
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const FAQScreen())),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const FAQScreen()),
+          ),
         ),
       );
 
@@ -279,7 +280,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           Expanded(
             child: _actionButton(
               ctx,
-              icon: Icons.save,
+              asset: 'lib/features/auth/assets/diskette.png', // SAVE icon
               label: 'Save',
               isLoading: authCtrl.isLoading,
               onTap: () => _saveProfile(user, ctx),
@@ -289,12 +290,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           Expanded(
             child: _actionButton(
               ctx,
-              icon: Icons.logout,
+              asset: 'lib/features/auth/assets/logout.png',   // LOGOUT icon
               label: 'Sign Out',
               isLoading: authCtrl.isLoading,
               color: theme.colorScheme.error,
-              onTap: () =>
-                  ref.read(authControllerProvider.notifier).signOut(),
+              onTap: () => ref.read(authControllerProvider.notifier).signOut(),
             ),
           ),
         ],
@@ -341,9 +341,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget _circle(double s, Color c) =>
       Container(width: s, height: s, decoration: BoxDecoration(shape: BoxShape.circle, color: c));
 
+  // new: asset-based action button
   Widget _actionButton(
     BuildContext ctx, {
-    required IconData icon,
+    required String asset,
     required String label,
     required bool isLoading,
     required VoidCallback onTap,
@@ -356,7 +357,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 height: 16,
                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
               )
-            : Icon(icon),
+            : Image.asset(asset, width: 24, height: 24),
         label: Text(label),
         style: ElevatedButton.styleFrom(backgroundColor: color),
         onPressed: isLoading ? null : onTap,
