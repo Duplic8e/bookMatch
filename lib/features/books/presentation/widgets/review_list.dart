@@ -31,6 +31,8 @@ class ReviewList extends ConsumerWidget {
             final review = reviews[index];
             return Card(
               margin: const EdgeInsets.symmetric(vertical: 8.0),
+              color: Theme.of(context).colorScheme.surface,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Column(
