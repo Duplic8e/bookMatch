@@ -11,18 +11,21 @@ final firestoreCommunityPostDatasourceProvider = Provider((ref) {
   return FirestoreCommunityPostDataSource();
 });
 
-final communityPostRepositoryProvider = Provider<CommunityPostRepository>((ref) {
+final communityPostRepositoryProvider =
+    Provider<CommunityPostRepository>((ref) {
   final datasource = ref.watch(firestoreCommunityPostDatasourceProvider);
   return CommunityPostRepositoryImpl(datasource: datasource);
 });
 
-
 // --- STATE NOTIFIER PROVIDER ---
-final communityControllerProvider = StateNotifierProvider.autoDispose<CommunityController, AsyncValue<CommunityFeedState>>((ref) {
-  final repository = ref.watch(communityPostRepositoryProvider);
-  return CommunityController(repository, ref);
-});
-
+// Removed autoDispose so controller stays alive when creating a post
+final communityControllerProvider =
+    StateNotifierProvider<CommunityController, AsyncValue<CommunityFeedState>>(
+  (ref) {
+    final repository = ref.watch(communityPostRepositoryProvider);
+    return CommunityController(repository, ref);
+  },
+);
 
 class CommunityFeedState {
   final List<CommunityPost> posts;
@@ -48,14 +51,17 @@ class CommunityFeedState {
   }
 }
 
-class CommunityController extends StateNotifier<AsyncValue<CommunityFeedState>> {
+class CommunityController
+    extends StateNotifier<AsyncValue<CommunityFeedState>> {
   final CommunityPostRepository _repository;
   final Ref _ref;
   final int _limit = 10;
 
-  String? get _currentUserId => _ref.read(authStateChangesProvider).value?.uid;
+  String? get _currentUserId =>
+      _ref.read(authStateChangesProvider).value?.uid;
 
-  CommunityController(this._repository, this._ref) : super(const AsyncLoading()) {
+  CommunityController(this._repository, this._ref)
+      : super(const AsyncLoading()) {
     fetchInitialPosts();
   }
 
@@ -73,26 +79,37 @@ class CommunityController extends StateNotifier<AsyncValue<CommunityFeedState>> 
   }
 
   Future<void> fetchNextPage() async {
-    if (state.value?.isLoadingNextPage == true || state.value?.hasMore == false) return;
+    if (state.value?.isLoadingNextPage == true ||
+        state.value?.hasMore == false) return;
 
     state = AsyncData(state.value!.copyWith(isLoadingNextPage: true));
 
     final lastPostId = state.value!.posts.last.id;
-    final lastDoc = await FirebaseFirestore.instance.collection('posts').doc(lastPostId).get();
+    final lastDoc = await FirebaseFirestore.instance
+        .collection('posts')
+        .doc(lastPostId)
+        .get();
 
     try {
-      final newPosts = await _repository.getPosts(lastDoc: lastDoc, limit: _limit);
+      final newPosts = await _repository.getPosts(
+        lastDoc: lastDoc,
+        limit: _limit,
+      );
       state = AsyncData(state.value!.copyWith(
         posts: [...state.value!.posts, ...newPosts],
         hasMore: newPosts.length == _limit,
         isLoadingNextPage: false,
       ));
-    } catch (e) {
+    } catch (_) {
       state = AsyncData(state.value!.copyWith(isLoadingNextPage: false));
     }
   }
 
-  Future<void> addPost({required String text, required String authorName, Map<String, dynamic>? bookCitation}) async {
+  Future<void> addPost({
+    required String text,
+    required String authorName,
+    Map<String, dynamic>? bookCitation,
+  }) async {
     final userId = _currentUserId;
     if (userId == null) throw Exception("User not logged in");
 
@@ -104,7 +121,6 @@ class CommunityController extends StateNotifier<AsyncValue<CommunityFeedState>> 
       createdAt: DateTime.now(),
       likedBy: [],
       bookCitation: bookCitation,
-      // ** THE FIX: Initialize new posts with a comment count of 0 **
       commentCount: 0,
     );
     await _repository.addPost(post);
@@ -124,26 +140,43 @@ class CommunityController extends StateNotifier<AsyncValue<CommunityFeedState>> 
         } else {
           newLikedBy.add(userId);
         }
-        return CommunityPost(id: post.id, authorId: post.authorId, authorName: post.authorName, text: post.text, createdAt: post.createdAt, likedBy: newLikedBy, bookCitation: post.bookCitation, commentCount: post.commentCount);
+        // ← Manually rebuild the CommunityPost instead of calling copyWith()
+        return CommunityPost(
+          id: post.id,
+          authorId: post.authorId,
+          authorName: post.authorName,
+          text: post.text,
+          createdAt: post.createdAt,
+          likedBy: newLikedBy,
+          bookCitation: post.bookCitation,
+          commentCount: post.commentCount,
+        );
       }
       return post;
     }).toList();
+
+    // Optimistically update UI
     state = AsyncData(state.value!.copyWith(posts: updatedPosts));
 
     try {
-      await _repository.togglePostLike(postId: postId, userId: userId);
+      await _repository.togglePostLike(
+        postId: postId,
+        userId: userId,
+      );
     } catch (e) {
+      // Revert on failure
       state = AsyncData(state.value!.copyWith(posts: currentPosts));
     }
   }
 
   Future<void> deletePost(String postId) async {
     final currentPosts = state.valueOrNull?.posts ?? [];
-    state = AsyncData(state.value!.copyWith(posts: currentPosts.where((p) => p.id != postId).toList()));
-
+    state = AsyncData(state.value!.copyWith(
+      posts: currentPosts.where((p) => p.id != postId).toList(),
+    ));
     try {
       await _repository.deletePost(postId);
-    } catch (e) {
+    } catch (_) {
       state = AsyncData(state.value!.copyWith(posts: currentPosts));
     }
   }

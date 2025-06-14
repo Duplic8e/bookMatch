@@ -1,110 +1,114 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:go_router/go_router.dart';  // for context.pop()
+import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mobile_app_project_bookstore/features/auth/presentation/providers/auth_providers.dart';
 import 'package:mobile_app_project_bookstore/features/community/providers/community_providers.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic>? bookCitation;
 
-  const CreatePostScreen({super.key, this.bookCitation});
+  const CreatePostScreen({Key? key, this.bookCitation}) : super(key: key);
 
   @override
   ConsumerState<CreatePostScreen> createState() => _CreatePostScreenState();
 }
 
 class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
-  final _textController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  bool _isPosting = false;
+  final _controller = TextEditingController();
 
   @override
   void dispose() {
-    _textController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
-  Future<void> _submitPost() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isPosting = true);
+  Future<void> _submit() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
 
-      final user = ref.read(authStateChangesProvider).value;
-      if (user == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You must be logged in to post.')));
-        setState(() => _isPosting = false);
-        return;
-      }
-
-      try {
-        // ** THE FIX: Call the addPost method with the correct parameters **
-        await ref.read(communityControllerProvider.notifier).addPost(
-          text: _textController.text.trim(),
-          authorName: user.displayName ?? 'Anonymous User',
-          bookCitation: widget.bookCitation,
-        );
-
-        if (mounted) context.pop();
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to create post: ${e.toString()}')));
-        }
-      } finally {
-        if (mounted) setState(() => _isPosting = false);
-      }
-    }
+    final authorName = ref.read(authStateChangesProvider).value?.displayName ?? 'Anonymous';
+    await ref.read(communityControllerProvider.notifier).addPost(
+      text: text,
+      authorName: authorName,
+      bookCitation: widget.bookCitation,
+    );
+    if (mounted) context.pop();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create a Post'),
+        backgroundColor: theme.colorScheme.surface,
+        foregroundColor: theme.colorScheme.primary,
+        elevation: 0,
+        title: Text(
+          'Create a Post',
+          style: GoogleFonts.medievalSharp(textStyle: theme.textTheme.titleLarge!),
+        ),
         actions: [
-          if (_isPosting)
-            const Padding(
-              padding: EdgeInsets.only(right: 16.0),
-              child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator())),
-            )
-          else
-            TextButton(
-              onPressed: _submitPost,
-              child: const Text('POST'),
-            )
+          TextButton(
+            onPressed: _submit,
+            style: TextButton.styleFrom(
+              foregroundColor: theme.colorScheme.primary,
+              textStyle: GoogleFonts.merriweather(textStyle: theme.textTheme.titleSmall!),
+            ),
+            child: const Text('POST'),
+          ),
         ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              if (widget.bookCitation != null)
-                Card(
-                  color: Theme.of(context).colorScheme.surfaceVariant,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      'Sharing a thought from "${widget.bookCitation!['title']}" (Page ${widget.bookCitation!['pageNumber']})',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
+        child: Column(
+          children: [
+            if (widget.bookCitation != null) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceVariant,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Sharing a thought from "${widget.bookCitation!['title']}" '
+                  '(Page ${widget.bookCitation!['pageNumber']})',
+                  style: GoogleFonts.merriweather(textStyle: theme.textTheme.bodySmall!),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // ← Fixed-height input box
+            SizedBox(
+              height: 200,
+              child: TextField(
+                controller: _controller,
+                minLines: null,
+                maxLines: null,
+                expands: false,
+                style: GoogleFonts.merriweather(textStyle: theme.textTheme.bodyMedium!),
+                decoration: InputDecoration(
+                  hintText: 'Share your thoughts…',
+                  hintStyle: GoogleFonts.merriweather(
+                    textStyle: theme.textTheme.bodyMedium!.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: theme.colorScheme.primary),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _textController,
-                maxLines: 8,
-                autofocus: true,
-                decoration: const InputDecoration(
-                  hintText: 'Share your thoughts...',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) return 'Post cannot be empty.';
-                  return null;
-                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
