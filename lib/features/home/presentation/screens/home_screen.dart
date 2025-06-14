@@ -261,17 +261,38 @@ class _SectionCarousel extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // ← Title row (All, Fantasy, Fiction, etc.)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: GoogleFonts.merriweather(textStyle: theme.textTheme.titleMedium!, fontWeight: FontWeight.w600)),
-              TextButton(onPressed: () {}, child: Text('View All', style: GoogleFonts.merriweather(textStyle: theme.textTheme.bodyMedium!, fontWeight: FontWeight.w500))),
+              Text(
+                title,
+                style: GoogleFonts.merriweather(
+                  textStyle: theme.textTheme.titleMedium!,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  // TODO: implement “View All” behavior if needed
+                },
+                child: Text(
+                  'View All',
+                  style: GoogleFonts.merriweather(
+                    textStyle: theme.textTheme.bodyMedium!,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
+
         const SizedBox(height: 12),
+
+        // ← The horizontal book carousel
         SizedBox(
           height: 260,
           child: booksAsync.when(
@@ -281,16 +302,30 @@ class _SectionCarousel extends StatelessWidget {
               separatorBuilder: (_, __) => const SizedBox(width: 16),
               itemBuilder: (context, idx) {
                 final book = books[idx];
-                return GestureDetector(
-                  onTap: () => context.pushNamed('bookDetails', pathParameters: {'id': book.id}),
-                  child: _BookCard(book: book),
+                return Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () => context.pushNamed(
+                      'bookDetails',
+                      pathParameters: {'bookId': book.id},
+                    ),
+                    child: _BookCard(book: book),
+                  ),
                 );
               },
             ),
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, __) => Center(child: Text('Failed to load books.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error))),
+            error: (_, __) => Center(
+              child: Text(
+                'Failed to load books.',
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(color: theme.colorScheme.error),
+              ),
+            ),
           ),
         ),
+
         const SizedBox(height: 24),
       ],
     );
@@ -315,19 +350,41 @@ class _BookCard extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: book.coverImageUrl.isNotEmpty
-                  ? Image.network(book.coverImageUrl, height: 180, width: 140, fit: BoxFit.cover)
+                  ? Image.network(
+                      book.coverImageUrl,
+                      height: 180,
+                      width: 140,
+                      fit: BoxFit.cover,
+                    )
                   : Container(
-                height: 180,
-                width: 140,
-                color: Colors.grey[200],
-                child: const Icon(Icons.book, size: 50, color: Colors.grey),
-              ),
+                      height: 180,
+                      width: 140,
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.book,
+                          size: 50, color: Colors.grey),
+                    ),
             ),
           ),
           const SizedBox(height: 8),
-          Text(book.title, style: GoogleFonts.merriweather(textStyle: theme.textTheme.bodyMedium!, fontWeight: FontWeight.w600), maxLines: 2, overflow: TextOverflow.ellipsis),
+          Text(
+            book.title,
+            style: GoogleFonts.merriweather(
+              textStyle: theme.textTheme.bodyMedium!,
+              fontWeight: FontWeight.w600,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
           const SizedBox(height: 4),
-          Text(book.authors.join(', '), style: GoogleFonts.merriweather(textStyle: theme.textTheme.bodySmall!, fontWeight: FontWeight.w400), maxLines: 1, overflow: TextOverflow.ellipsis),
+          Text(
+            (book.authors as List<dynamic>).join(', '),
+            style: GoogleFonts.merriweather(
+              textStyle: theme.textTheme.bodySmall!,
+              fontWeight: FontWeight.w400,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );
