@@ -81,6 +81,7 @@ flutter:
   uses-material-design: true
   assets:
     - lib/features/home/assets/
+    - lib/features/auth/assets/
   fonts:
     - family: Ancient Medium
       fonts:

@@ -27,10 +27,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   ];
   List<String> selectedGenres = [];
 
-  // background animation
+  // animated background
   double _scrollOffset = 0;
   late final AnimationController _pulseController;
-  late final Animation<double> _pulseAnimation;
+  late final Animation<double>  _pulseAnimation;
 
   @override
   void initState() {
@@ -79,58 +79,43 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   Widget build(BuildContext context) {
     final theme       = Theme.of(context);
-    final merri       = context.merriweather;         // extension from AppTheme
+    final merri       = context.merriweather;
     final user        = ref.watch(authStateChangesProvider).valueOrNull;
     final authCtrl    = ref.watch(authControllerProvider);
     final currentMode = ref.watch(themeNotifierProvider);
 
     return Scaffold(
       appBar: AppBar(
-          backgroundColor: Colors.white.withOpacity(.85),
-          elevation: 0,
-          title: Text(
-            'Profile & Settings',
-            // use the Ancient-Medium style from your theme:
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium!                          // Ancient Medium font
-                .copyWith(color: Theme.of(context).colorScheme.primary),
-          ),
+        backgroundColor: Colors.white.withOpacity(.85),
+        elevation: 0,
+        title: Text(
+          'Profile & Settings',
+          style: Theme.of(context)
+              .textTheme
+              .titleMedium!
+              .copyWith(color: theme.colorScheme.primary),
         ),
+      ),
       body: NotificationListener<ScrollNotification>(
         onNotification: _onScrollNotification,
         child: Stack(
           children: [
-            // main circular blobs
-            _blob(
-              size: 260,
-              color: theme.colorScheme.primary.withOpacity(.25),
-              top: -160 + _scrollOffset * .45,
-              left: -110 + _scrollOffset * .25,
-              animated: true,
-            ),
-            _blob(
-              size: 320,
-              color: theme.colorScheme.secondary.withOpacity(.20),
-              bottom: -190 + _scrollOffset * .18,
-              right: -90 + _scrollOffset * .12,
-            ),
-            // extra square blob
-            _square(
-              size: 190,
-              color: theme.colorScheme.primary.withOpacity(.18),
-              top: 230 - _scrollOffset * .35,
-              right: -70 + _scrollOffset * .18,
-            ),
-            // extra small circle
-            _blob(
-              size: 130,
-              color: theme.colorScheme.secondary.withOpacity(.22),
-              top: 500 - _scrollOffset * .28,
-              left: -60 + _scrollOffset * .18,
-            ),
+            // animated blobs + shapes
+            _blob(260, theme.colorScheme.primary.withOpacity(.25),
+                top: -160 + _scrollOffset * .45,
+                left: -110 + _scrollOffset * .25,
+                animated: true),
+            _blob(320, theme.colorScheme.secondary.withOpacity(.20),
+                bottom: -190 + _scrollOffset * .18,
+                right: -90 + _scrollOffset * .12),
+            _square(190, theme.colorScheme.primary.withOpacity(.18),
+                top: 230 - _scrollOffset * .35,
+                right: -70 + _scrollOffset * .18),
+            _blob(130, theme.colorScheme.secondary.withOpacity(.22),
+                top: 500 - _scrollOffset * .28,
+                left: -60 + _scrollOffset * .18),
 
-            // content
+            // main content
             SingleChildScrollView(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Form(
@@ -141,110 +126,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (user != null) ...[
-                        Center(
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              ScaleTransition(
-                                scale: _pulseAnimation,
-                                child: _circle(
-                                    120, theme.colorScheme.primary.withOpacity(.30)),
-                              ),
-                              Hero(
-                                tag: 'profile-avatar',
-                                child: CircleAvatar(
-                                  radius: 50,
-                                  backgroundColor:
-                                      theme.colorScheme.primaryContainer,
-                                  child: Text(
-                                    (user.displayName?.isNotEmpty ?? false)
-                                        ? user.displayName![0].toUpperCase()
-                                        : user.email![0].toUpperCase(),
-                                    style: merri.titleLarge!.copyWith(fontSize: 48),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        _avatar(theme, merri, user),
                         const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _displayNameController,
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(Icons.person),
-                            labelText: 'Display Name',
-                            labelStyle: merri.bodyMedium,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
+                        _displayNameField(merri),
                         const SizedBox(height: 8),
                         Center(child: Text(user.email!, style: merri.bodyMedium)),
                         const SizedBox(height: 32),
                       ],
-
                       Text('Favorite Genres', style: merri.titleLarge),
                       const Divider(),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: Wrap(
-                          key: ValueKey(selectedGenres),
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: allGenres.map((g) {
-                            final sel = selectedGenres.contains(g);
-                            return ChoiceChip(
-                              label: Text(g,
-                                  style: merri.bodySmall!.copyWith(
-                                    color: sel
-                                        ? Colors.white
-                                        : theme.colorScheme.onSurface,
-                                  )),
-                              selected: sel,
-                              backgroundColor: theme.colorScheme.surface,
-                              selectedColor: theme.colorScheme.primary,
-                              onSelected: (v) => setState(() => v
-                                  ? selectedGenres.add(g)
-                                  : selectedGenres.remove(g)),
-                            );
-                          }).toList(),
-                        ),
-                      ),
+                      _genreChips(theme, merri),
                       const SizedBox(height: 32),
-
                       Text('Settings', style: merri.titleLarge),
                       const Divider(),
                       _themeCard(theme, merri, currentMode),
                       _faqCard(theme, merri),
                       const SizedBox(height: 32),
-
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _actionButton(
-                              context,
-                              icon: Icons.save,
-                              label: 'Save',
-                              isLoading: authCtrl.isLoading,
-                              onTap: () => _saveProfile(user, context),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _actionButton(
-                              context,
-                              icon: Icons.logout,
-                              label: 'Sign Out',
-                              isLoading: authCtrl.isLoading,
-                              color: theme.colorScheme.error,
-                              onTap: () => ref
-                                  .read(authControllerProvider.notifier)
-                                  .signOut(),
-                            ),
-                          ),
-                        ],
-                      ),
+                      _buttonsRow(theme, authCtrl, user, context),
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -257,62 +155,77 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  // --- Helper widgets --------------------------------------------------
+  // ---------- Widgets --------------------------------------------------
 
-  // circular or animated blob
-  Widget _blob({
-    required double size,
-    required Color color,
-    double? top,
-    double? left,
-    double? right,
-    double? bottom,
-    bool animated = false,
-  }) =>
-      Positioned(
-        top: top,
-        left: left,
-        right: right,
-        bottom: bottom,
-        child: animated
-            ? ScaleTransition(scale: _pulseAnimation, child: _circle(size, color))
-            : _circle(size, color),
-      );
-
-  // rotated square
-  Widget _square({
-    required double size,
-    required Color color,
-    double? top,
-    double? left,
-    double? right,
-    double? bottom,
-  }) =>
-      Positioned(
-        top: top,
-        left: left,
-        right: right,
-        bottom: bottom,
-        child: Transform.rotate(
-          angle: math.pi / 4,
-          child: Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(24),
+  Widget _avatar(ThemeData theme, TextTheme merri, User user) => Center(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            ScaleTransition(
+              scale: _pulseAnimation,
+              child:
+                  _circle(120, theme.colorScheme.primary.withOpacity(.30)),
             ),
-          ),
+            Hero(
+              tag: 'profile-avatar',
+              child: CircleAvatar(
+                radius: 50,
+                backgroundColor: theme.colorScheme.primaryContainer,
+                child: Text(
+                  (user.displayName?.isNotEmpty ?? false)
+                      ? user.displayName![0].toUpperCase()
+                      : user.email![0].toUpperCase(),
+                  style: merri.titleLarge!.copyWith(fontSize: 48),
+                ),
+              ),
+            ),
+          ],
         ),
       );
 
-  // plain circle
-  Widget _circle(double s, Color c) =>
-      Container(width: s, height: s, decoration: BoxDecoration(shape: BoxShape.circle, color: c));
+  Widget _displayNameField(TextTheme merri) => TextFormField(
+        controller: _displayNameController,
+        decoration: InputDecoration(
+          prefixIcon: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Image.asset(
+              'lib/features/auth/assets/user.png',
+              width: 24,
+              height: 24,
+            ),
+          ),
+          labelText: 'Display Name',
+          labelStyle: merri.bodyMedium,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
 
-  Card _themeCard(ThemeData theme, TextTheme merri, ThemeMode current) =>
-      Card(
-        color: theme.colorScheme.surface, // matches theme
+  Widget _genreChips(ThemeData theme, TextTheme merri) => AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        child: Wrap(
+          key: ValueKey(selectedGenres),
+          spacing: 8,
+          runSpacing: 8,
+          children: allGenres.map((g) {
+            final sel = selectedGenres.contains(g);
+            return ChoiceChip(
+              label: Text(g,
+                  style: merri.bodySmall!.copyWith(
+                      color:
+                          sel ? Colors.white : theme.colorScheme.onSurface)),
+              selected: sel,
+              backgroundColor: theme.colorScheme.surface,
+              selectedColor: theme.colorScheme.primary,
+              onSelected: (v) => setState(() => v
+                  ? selectedGenres.add(g)
+                  : selectedGenres.remove(g)),
+            );
+          }).toList(),
+        ),
+      );
+
+  Card _themeCard(ThemeData theme, TextTheme merri, ThemeMode current) => Card(
+        color: theme.colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -322,17 +235,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               Text('Theme', style: merri.bodyLarge),
               Row(
                 children: ThemeMode.values.map((mode) {
-                  final sel = mode == current;
-                  IconData ic = mode == ThemeMode.light
-                      ? Icons.light_mode
+                  final asset = mode == ThemeMode.light
+                      ? 'lib/features/auth/assets/sun.png'
                       : mode == ThemeMode.dark
-                          ? Icons.dark_mode
-                          : Icons.settings;
+                          ? 'lib/features/auth/assets/moon.png'
+                          : 'lib/features/auth/assets/gear.png';
                   return IconButton(
-                    icon: Icon(ic,
-                        color: sel
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.onSurface),
+                    icon: Image.asset(asset, width: 24, height: 24),
                     onPressed: () => ref
                         .read(themeNotifierProvider.notifier)
                         .setTheme(mode),
@@ -345,17 +254,92 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       );
 
   Card _faqCard(ThemeData theme, TextTheme merri) => Card(
-        color: theme.colorScheme.surface, // matches theme
+        color: theme.colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: ListTile(
-          leading: const Icon(Icons.help_outline),
+          leading: Image.asset(
+            'lib/features/auth/assets/question-mark.png',
+            width: 28,
+            height: 28,
+          ),
           title: Text('Help & FAQ', style: merri.bodyLarge),
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const FAQScreen()),
+          onTap: () =>
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const FAQScreen())),
+        ),
+      );
+
+  Widget _buttonsRow(
+    ThemeData theme,
+    AsyncValue authCtrl,
+    User? user,
+    BuildContext ctx,
+  ) =>
+      Row(
+        children: [
+          Expanded(
+            child: _actionButton(
+              ctx,
+              icon: Icons.save,
+              label: 'Save',
+              isLoading: authCtrl.isLoading,
+              onTap: () => _saveProfile(user, ctx),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: _actionButton(
+              ctx,
+              icon: Icons.logout,
+              label: 'Sign Out',
+              isLoading: authCtrl.isLoading,
+              color: theme.colorScheme.error,
+              onTap: () =>
+                  ref.read(authControllerProvider.notifier).signOut(),
+            ),
+          ),
+        ],
+      );
+
+  // ---------- Simple helpers ------------------------------------------
+
+  Widget _blob(double size, Color c,
+          {double? top,
+          double? left,
+          double? right,
+          double? bottom,
+          bool animated = false}) =>
+      Positioned(
+        top: top,
+        left: left,
+        right: right,
+        bottom: bottom,
+        child: animated
+            ? ScaleTransition(scale: _pulseAnimation, child: _circle(size, c))
+            : _circle(size, c),
+      );
+
+  Widget _square(double size, Color c,
+          {double? top, double? left, double? right, double? bottom}) =>
+      Positioned(
+        top: top,
+        left: left,
+        right: right,
+        bottom: bottom,
+        child: Transform.rotate(
+          angle: math.pi / 4,
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              color: c,
+              borderRadius: BorderRadius.circular(24),
+            ),
           ),
         ),
       );
+
+  Widget _circle(double s, Color c) =>
+      Container(width: s, height: s, decoration: BoxDecoration(shape: BoxShape.circle, color: c));
 
   Widget _actionButton(
     BuildContext ctx, {
@@ -370,10 +354,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             ? const SizedBox(
                 width: 16,
                 height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
               )
             : Icon(icon),
         label: Text(label),
@@ -392,9 +373,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             favoriteGenres: selectedGenres,
           );
       if (ctx.mounted) {
-        ScaffoldMessenger.of(ctx).showSnackBar(
-          const SnackBar(content: Text('Profile updated')),
-        );
+        ScaffoldMessenger.of(ctx)
+            .showSnackBar(const SnackBar(content: Text('Profile updated')));
       }
     }
   }
