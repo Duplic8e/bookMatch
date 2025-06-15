@@ -11,18 +11,22 @@ class LibraryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final libraryAsyncValue = ref.watch(userLibraryProvider);
+    final theme = Theme.of(context);
+    final libraryAsync = ref.watch(userLibraryProvider);
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: theme.colorScheme.surface,
+        foregroundColor: theme.colorScheme.primary,
+        elevation: 0,
         title: Text(
           'My Library',
-          style: GoogleFonts.merriweather(
-            textStyle: Theme.of(context).textTheme.titleLarge,
+          style: theme.textTheme.titleLarge!.copyWith(
+            fontWeight: FontWeight.w400, // slightly less bold
           ),
         ),
       ),
-      body: libraryAsyncValue.when(
+      body: libraryAsync.when(
         data: (entries) {
           if (entries.isEmpty) {
             return const Center(
@@ -52,12 +56,12 @@ class LibraryScreen extends ConsumerWidget {
               final book = entry.book;
 
               return Card(
-                color: Theme.of(context).colorScheme.surface,
+                color: theme.colorScheme.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 8),
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(12),
                   leading: ClipRRect(
@@ -66,23 +70,25 @@ class LibraryScreen extends ConsumerWidget {
                       book.coverImageUrl,
                       width: 50,
                       fit: BoxFit.cover,
-                      errorBuilder: (ctx, err, stack) =>
+                      errorBuilder: (ctx, _, __) =>
                           const Icon(Icons.book, size: 50),
                     ),
                   ),
+                  // Book title in Merriweather
                   title: Text(
                     book.title,
                     style: GoogleFonts.merriweather(
-                      textStyle: Theme.of(context).textTheme.titleSmall,
+                      textStyle: theme.textTheme.titleMedium,
                     ),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Authors in Merriweather
                       Text(
                         book.authors.join(', '),
                         style: GoogleFonts.merriweather(
-                          textStyle: Theme.of(context).textTheme.bodySmall,
+                          textStyle: theme.textTheme.bodySmall,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -96,14 +102,15 @@ class LibraryScreen extends ConsumerWidget {
                               barRadius: const Radius.circular(4),
                               backgroundColor: Colors.grey[300]!,
                               progressColor:
-                                  Theme.of(context).colorScheme.primary,
+                                  theme.colorScheme.primary,
                             ),
                           ),
                           const SizedBox(width: 8),
+                          // Percentage text in Merriweather
                           Text(
                             "${(entry.readingProgress * 100).toStringAsFixed(0)}%",
                             style: GoogleFonts.merriweather(
-                              textStyle: Theme.of(context).textTheme.bodySmall,
+                              textStyle: theme.textTheme.bodySmall,
                             ),
                           ),
                         ],
@@ -127,8 +134,9 @@ class LibraryScreen extends ConsumerWidget {
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) =>
+        loading: () =>
+            const Center(child: CircularProgressIndicator()),
+        error: (err, _) =>
             Center(child: Text('Error loading library: $err')),
       ),
     );

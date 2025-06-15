@@ -28,18 +28,26 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       ref.read(communityControllerProvider.notifier).fetchNextPage();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final feedStateAsync = ref.watch(communityControllerProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Community'),
+        backgroundColor: theme.colorScheme.surface,
+        foregroundColor: theme.colorScheme.primary,
+        elevation: 0,
+        title: Text(
+          'Community',
+          style: theme.textTheme.titleLarge, // ← Ancient Medium @ large size
+        ),
       ),
       body: feedStateAsync.when(
         data: (feedState) {
@@ -47,10 +55,13 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
             return const Center(child: Text('No posts yet. Be the first!'));
           }
           return RefreshIndicator(
-            onRefresh: () => ref.read(communityControllerProvider.notifier).fetchInitialPosts(),
+            onRefresh: () => ref
+                .read(communityControllerProvider.notifier)
+                .fetchInitialPosts(),
             child: ListView.builder(
               controller: _scrollController,
-              itemCount: feedState.posts.length + (feedState.hasMore ? 1 : 0),
+              itemCount:
+                  feedState.posts.length + (feedState.hasMore ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index < feedState.posts.length) {
                   final post = feedState.posts[index];
@@ -58,17 +69,22 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                 } else {
                   return const Padding(
                     padding: EdgeInsets.all(16.0),
-                    child: Center(child: CircularProgressIndicator()),
+                    child:
+                        Center(child: CircularProgressIndicator()),
                   );
                 }
               },
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error loading posts: $err')),
+        loading: () =>
+            const Center(child: CircularProgressIndicator()),
+        error: (err, stack) =>
+            Center(child: Text('Error loading posts: $err')),
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
         onPressed: () {
           context.pushNamed('createPost');
         },
