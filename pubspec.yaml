@@ -83,6 +83,7 @@ flutter:
     - lib/features/home/assets/
     - lib/features/auth/assets/
     - lib/features/books/assets/
+    - lib/features/community/assets/
   fonts:
     - family: Ancient Medium
       fonts:
