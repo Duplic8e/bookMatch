@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "mobile-project-bookstore": "mobile-project-bookstore",
+    "default": "mobile-project-bookstore"
+  },
+  "targets": {},
+  "etags": {}
+}

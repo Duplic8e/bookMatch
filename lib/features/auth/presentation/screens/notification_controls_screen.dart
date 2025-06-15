@@ -1,6 +1,6 @@
-// notification_controls_screen.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 class NotificationControlsScreen extends StatefulWidget {
@@ -41,6 +41,20 @@ class _NotificationControlsScreenState extends State<NotificationControlsScreen>
         'notifyNewBooks': _notifyNewBooks,
         'notifyMentions': _notifyMentions,
       });
+
+      final fcm = FirebaseMessaging.instance;
+      if (_notifyNewBooks) {
+        await fcm.subscribeToTopic('new-books');
+      } else {
+        await fcm.unsubscribeFromTopic('new-books');
+      }
+
+      if (_notifyMentions) {
+        await fcm.subscribeToTopic('mentions');
+      } else {
+        await fcm.unsubscribeFromTopic('mentions');
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Notification preferences updated.')),
