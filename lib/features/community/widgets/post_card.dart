@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+
 import 'package:mobile_app_project_bookstore/features/auth/presentation/providers/auth_providers.dart';
 import 'package:mobile_app_project_bookstore/features/community/domain/entities/community_post.dart';
 import 'package:mobile_app_project_bookstore/features/community/providers/community_providers.dart';
@@ -9,42 +11,53 @@ import 'package:mobile_app_project_bookstore/features/community/providers/commen
 
 class PostCard extends ConsumerWidget {
   final CommunityPost post;
-  const PostCard({super.key, required this.post});
+  const PostCard({Key? key, required this.post}) : super(key: key);
+
+  static const _iconSize = 24.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme       = Theme.of(context);
     final currentUser = ref.watch(authStateChangesProvider).value;
-    final isLiked = currentUser != null && post.likedBy.contains(currentUser.uid);
-    final isAuthor = currentUser != null && post.authorId == currentUser.uid;
+    final isLiked     = currentUser != null && post.likedBy.contains(currentUser.uid);
+    final isAuthor    = currentUser != null && post.authorId == currentUser.uid;
 
-    // Live comment stream for this post
     final commentsAsync = ref.watch(commentsStreamProvider(post.id));
-
-    // Safe author initial (fallback to '?' if empty)
     final authorInitial = post.authorName.isNotEmpty
         ? post.authorName[0].toUpperCase()
         : '?';
 
     return Card(
+      color: theme.colorScheme.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 2,
       child: InkWell(
-        borderRadius: BorderRadius.circular(4),
-        onTap: () {
-          context.pushNamed(
-            'postDetails',
-            pathParameters: {'postId': post.id},
-          );
-        },
+        borderRadius: BorderRadius.circular(12),
+        splashColor: theme.colorScheme.primary.withOpacity(0.2),
+        highlightColor: Colors.transparent,
+        onTap: () => context.pushNamed(
+          'postDetails',
+          pathParameters: {'postId': post.id},
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header row: avatar, name, timestamp, delete button if author
+              // Header row
               Row(
                 children: [
-                  CircleAvatar(child: Text(authorInitial)),
+                  CircleAvatar(
+                    backgroundColor: theme.colorScheme.primaryContainer,
+                    child: Text(
+                      authorInitial,
+                      style: GoogleFonts.merriweather(
+                        textStyle: theme.textTheme.titleMedium,
+                        color: theme.colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -52,20 +65,30 @@ class PostCard extends ConsumerWidget {
                       children: [
                         Text(
                           post.authorName,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: GoogleFonts.merriweather(
+                            textStyle: theme.textTheme.bodyLarge,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
                         ),
                         Text(
-                          DateFormat.yMMMd()
-                              .add_jm()
-                              .format(post.createdAt),
-                          style: Theme.of(context).textTheme.bodySmall,
+                          DateFormat.yMMMd().add_jm().format(post.createdAt),
+                          style: GoogleFonts.merriweather(
+                            textStyle: theme.textTheme.bodySmall,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   if (isAuthor)
                     IconButton(
-                      icon: const Icon(Icons.delete_outline),
+                      iconSize: _iconSize,
+                      icon: Image.asset(
+                        'lib/features/community/assets/delete.png',
+                        width: _iconSize,
+                        height: _iconSize,
+                      ),
                       onPressed: () =>
                           ref.read(communityControllerProvider.notifier).deletePost(post.id),
                     ),
@@ -74,59 +97,99 @@ class PostCard extends ConsumerWidget {
 
               const SizedBox(height: 12),
 
-              // Optional book citation
+              // Book citation pill (wood-brown container)
               if (post.bookCitation != null)
-                Card(
-                  color: Theme.of(context).colorScheme.surfaceVariant,
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(8),
                   margin: const EdgeInsets.only(bottom: 12),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      'From "${post.bookCitation!['title']}" '
-                      '(Page ${post.bookCitation!['pageNumber']})',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(fontStyle: FontStyle.italic),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'From "${post.bookCitation!['title']}" '
+                    '(Page ${post.bookCitation!['pageNumber']})',
+                    style: GoogleFonts.merriweather(
+                      textStyle: theme.textTheme.bodySmall,
+                      fontStyle: FontStyle.italic,
+                      color: theme.colorScheme.onPrimaryContainer,
                     ),
                   ),
                 ),
 
               // Post text
-              Text(post.text, style: Theme.of(context).textTheme.bodyLarge),
+              Text(
+                post.text,
+                style: GoogleFonts.merriweather(
+                  textStyle: theme.textTheme.bodyMedium,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
 
               const SizedBox(height: 12),
 
-              // Action row: like, likeCount, comment icon, live commentCount
+              // Action row
               Row(
                 children: [
+                  // Like button
                   IconButton(
-                    icon: Icon(
-                      isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                      color: isLiked ? Theme.of(context).colorScheme.primary : null,
+                    iconSize: _iconSize,
+                    icon: Image.asset(
+                      'lib/features/community/assets/like.png',
+                      width: _iconSize,
+                      height: _iconSize,
                     ),
-                    onPressed: () =>
-                        ref.read(communityControllerProvider.notifier).togglePostLike(post.id),
+                    onPressed: () => ref
+                        .read(communityControllerProvider.notifier)
+                        .togglePostLike(post.id),
                   ),
-                  Text('${post.likedBy.length}'),
+                  Text(
+                    '${post.likedBy.length}',
+                    style: GoogleFonts.merriweather(
+                      textStyle: theme.textTheme.bodySmall,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+
                   const SizedBox(width: 24),
+
+                  // Comment button
                   IconButton(
-                    icon: const Icon(Icons.comment_outlined),
+                    iconSize: _iconSize,
+                    icon: Image.asset(
+                      'lib/features/community/assets/comments.png',
+                      width: _iconSize,
+                      height: _iconSize,
+                    ),
                     onPressed: () => context.pushNamed(
                       'postDetails',
                       pathParameters: {'postId': post.id},
                     ),
                   ),
-
-                  // LIVE-UPDATING COMMENT COUNT
                   commentsAsync.when(
-                    data: (comments) => Text('${comments.length}'),
-                    loading: () => const SizedBox(
+                    data: (comments) => Text(
+                      '${comments.length}',
+                      style: GoogleFonts.merriweather(
+                        textStyle: theme.textTheme.bodySmall,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    loading: () => SizedBox(
                       width: 16,
                       height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: theme.colorScheme.primary,
+                      ),
                     ),
-                    error: (_, __) => const Text('0'),
+                    error: (_, __) => Text(
+                      '0',
+                      style: GoogleFonts.merriweather(
+                        textStyle: theme.textTheme.bodySmall,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                   ),
                 ],
               ),
