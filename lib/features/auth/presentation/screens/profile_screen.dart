@@ -7,7 +7,8 @@ import 'package:mobile_app_project_bookstore/core/theme/app_theme.dart';
 import 'package:mobile_app_project_bookstore/core/theme/theme_provider.dart';
 import 'package:mobile_app_project_bookstore/features/auth/presentation/providers/auth_providers.dart';
 import 'package:mobile_app_project_bookstore/features/user_profile/presentation/providers/user_profile_providers.dart';
-import 'faq_screen.dart';
+import 'package:mobile_app_project_bookstore/features/auth/presentation/screens/faq_screen.dart';
+import 'package:mobile_app_project_bookstore/features/auth/presentation//screens/notification_controls_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -27,7 +28,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   ];
   List<String> selectedGenres = [];
 
-  // animated background
   double _scrollOffset = 0;
   late final AnimationController _pulseController;
   late final Animation<double> _pulseAnimation;
@@ -60,11 +60,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
   Future<void> _loadUserProfile(String uid) async {
     final snap =
-        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    await FirebaseFirestore.instance.collection('users').doc(uid).get();
     if (snap.exists && mounted) {
       setState(() {
         selectedGenres =
-            List<String>.from(snap.data()?['favoriteGenres'] ?? <String>[]);
+        List<String>.from(snap.data()?['favoriteGenres'] ?? <String>[]);
       });
     }
   }
@@ -100,7 +100,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         onNotification: _onScrollNotification,
         child: Stack(
           children: [
-            // animated blobs + shapes
             _blob(260, theme.colorScheme.primary.withOpacity(.25),
                 top: -160 + _scrollOffset * .45,
                 left: -110 + _scrollOffset * .25,
@@ -115,7 +114,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 top: 500 - _scrollOffset * .28,
                 left: -60 + _scrollOffset * .18),
 
-            // main content
             SingleChildScrollView(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Form(
@@ -141,6 +139,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       const Divider(),
                       _themeCard(theme, merri, currentMode),
                       _faqCard(theme, merri),
+                      _notificationsCard(theme, merri),
                       const SizedBox(height: 32),
                       _buttonsRow(theme, authCtrl, user, context),
                       const SizedBox(height: 24),
@@ -155,132 +154,142 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  // ---------- Widgets --------------------------------------------------
-
   Widget _avatar(ThemeData theme, TextTheme merri, User user) => Center(
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            ScaleTransition(
-              scale: _pulseAnimation,
-              child: _circle(120, theme.colorScheme.primary.withOpacity(.30)),
-            ),
-            Hero(
-              tag: 'profile-avatar',
-              child: CircleAvatar(
-                radius: 50,
-                backgroundColor: theme.colorScheme.primaryContainer,
-                child: Text(
-                  (user.displayName?.isNotEmpty ?? false)
-                      ? user.displayName![0].toUpperCase()
-                      : user.email![0].toUpperCase(),
-                  style: merri.titleLarge!.copyWith(fontSize: 48),
-                ),
-              ),
-            ),
-          ],
+    child: Stack(
+      alignment: Alignment.center,
+      children: [
+        ScaleTransition(
+          scale: _pulseAnimation,
+          child: _circle(120, theme.colorScheme.primary.withOpacity(.30)),
         ),
-      );
+        Hero(
+          tag: 'profile-avatar',
+          child: CircleAvatar(
+            radius: 50,
+            backgroundColor: theme.colorScheme.primaryContainer,
+            child: Text(
+              (user.displayName?.isNotEmpty ?? false)
+                  ? user.displayName![0].toUpperCase()
+                  : user.email![0].toUpperCase(),
+              style: merri.titleLarge!.copyWith(fontSize: 48),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 
   Widget _displayNameField(TextTheme merri) => TextFormField(
-        controller: _displayNameController,
-        decoration: InputDecoration(
-          prefixIcon: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Image.asset(
-              'lib/features/auth/assets/user.png',
-              width: 24,
-              height: 24,
-            ),
-          ),
-          labelText: 'Display Name',
-          labelStyle: merri.bodyMedium,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+    controller: _displayNameController,
+    decoration: InputDecoration(
+      prefixIcon: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Image.asset(
+          'lib/features/auth/assets/user.png',
+          width: 24,
+          height: 24,
         ),
-      );
+      ),
+      labelText: 'Display Name',
+      labelStyle: merri.bodyMedium,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+  );
 
   Widget _genreChips(ThemeData theme, TextTheme merri) => AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        child: Wrap(
-          key: ValueKey(selectedGenres),
-          spacing: 8,
-          runSpacing: 8,
-          children: allGenres.map((g) {
-            final sel = selectedGenres.contains(g);
-            return ChoiceChip(
-              label: Text(g,
-                  style: merri.bodySmall!.copyWith(
-                      color:
-                          sel ? Colors.white : theme.colorScheme.onSurface)),
-              selected: sel,
-              backgroundColor: theme.colorScheme.surface,
-              selectedColor: theme.colorScheme.primary,
-              onSelected: (v) => setState(() => v
-                  ? selectedGenres.add(g)
-                  : selectedGenres.remove(g)),
-            );
-          }).toList(),
-        ),
-      );
+    duration: const Duration(milliseconds: 300),
+    child: Wrap(
+      key: ValueKey(selectedGenres),
+      spacing: 8,
+      runSpacing: 8,
+      children: allGenres.map((g) {
+        final sel = selectedGenres.contains(g);
+        return ChoiceChip(
+          label: Text(g,
+              style: merri.bodySmall!.copyWith(
+                  color: sel ? Colors.white : theme.colorScheme.onSurface)),
+          selected: sel,
+          backgroundColor: theme.colorScheme.surface,
+          selectedColor: theme.colorScheme.primary,
+          onSelected: (v) => setState(() => v
+              ? selectedGenres.add(g)
+              : selectedGenres.remove(g)),
+        );
+      }).toList(),
+    ),
+  );
 
   Card _themeCard(ThemeData theme, TextTheme merri, ThemeMode current) => Card(
-        color: theme.colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Theme', style: merri.bodyLarge),
-              Row(
-                children: ThemeMode.values.map((mode) {
-                  final asset = mode == ThemeMode.light
-                      ? 'lib/features/auth/assets/sun.png'
-                      : mode == ThemeMode.dark
-                          ? 'lib/features/auth/assets/moon.png'
-                          : 'lib/features/auth/assets/gear.png';
-                  return IconButton(
-                    icon: Image.asset(asset, width: 24, height: 24),
-                    onPressed: () => ref
-                        .read(themeNotifierProvider.notifier)
-                        .setTheme(mode),
-                  );
-                }).toList(),
-              )
-            ],
-          ),
-        ),
-      );
+    color: theme.colorScheme.surface,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Theme', style: merri.bodyLarge),
+          Row(
+            children: ThemeMode.values.map((mode) {
+              final asset = mode == ThemeMode.light
+                  ? 'lib/features/auth/assets/sun.png'
+                  : mode == ThemeMode.dark
+                  ? 'lib/features/auth/assets/moon.png'
+                  : 'lib/features/auth/assets/gear.png';
+              return IconButton(
+                icon: Image.asset(asset, width: 24, height: 24),
+                onPressed: () => ref
+                    .read(themeNotifierProvider.notifier)
+                    .setTheme(mode),
+              );
+            }).toList(),
+          )
+        ],
+      ),
+    ),
+  );
 
   Card _faqCard(ThemeData theme, TextTheme merri) => Card(
-        color: theme.colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: ListTile(
-          leading: Image.asset(
-            'lib/features/auth/assets/question-mark.png',
-            width: 28,
-            height: 28,
-          ),
-          title: Text('Help & FAQ', style: merri.bodyLarge),
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const FAQScreen()),
-          ),
-        ),
-      );
+    color: theme.colorScheme.surface,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: ListTile(
+      leading: Image.asset(
+        'lib/features/auth/assets/question-mark.png',
+        width: 28,
+        height: 28,
+      ),
+      title: Text('Help & FAQ', style: merri.bodyLarge),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const FAQScreen()),
+      ),
+    ),
+  );
+
+  Card _notificationsCard(ThemeData theme, TextTheme merri) => Card(
+    color: theme.colorScheme.surface,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: ListTile(
+      leading: const Icon(Icons.notifications, color: Colors.teal),
+      title: Text('Notification Settings', style: merri.bodyLarge),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const NotificationControlsScreen()),
+      ),
+    ),
+  );
 
   Widget _buttonsRow(
-    ThemeData theme,
-    AsyncValue authCtrl,
-    User? user,
-    BuildContext ctx,
-  ) =>
+      ThemeData theme,
+      AsyncValue authCtrl,
+      User? user,
+      BuildContext ctx,
+      ) =>
       Row(
         children: [
           Expanded(
             child: _actionButton(
               ctx,
-              asset: 'lib/features/auth/assets/diskette.png', // SAVE icon
+              asset: 'lib/features/auth/assets/diskette.png',
               label: 'Save',
               isLoading: authCtrl.isLoading,
               onTap: () => _saveProfile(user, ctx),
@@ -290,7 +299,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           Expanded(
             child: _actionButton(
               ctx,
-              asset: 'lib/features/auth/assets/logout.png',   // LOGOUT icon
+              asset: 'lib/features/auth/assets/logout.png',
               label: 'Sign Out',
               isLoading: authCtrl.isLoading,
               color: theme.colorScheme.error,
@@ -300,14 +309,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ],
       );
 
-  // ---------- Simple helpers ------------------------------------------
-
   Widget _blob(double size, Color c,
-          {double? top,
-          double? left,
-          double? right,
-          double? bottom,
-          bool animated = false}) =>
+      {double? top,
+        double? left,
+        double? right,
+        double? bottom,
+        bool animated = false}) =>
       Positioned(
         top: top,
         left: left,
@@ -319,7 +326,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       );
 
   Widget _square(double size, Color c,
-          {double? top, double? left, double? right, double? bottom}) =>
+      {double? top, double? left, double? right, double? bottom}) =>
       Positioned(
         top: top,
         left: left,
@@ -341,22 +348,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget _circle(double s, Color c) =>
       Container(width: s, height: s, decoration: BoxDecoration(shape: BoxShape.circle, color: c));
 
-  // new: asset-based action button
   Widget _actionButton(
-    BuildContext ctx, {
-    required String asset,
-    required String label,
-    required bool isLoading,
-    required VoidCallback onTap,
-    Color? color,
-  }) =>
+      BuildContext ctx, {
+        required String asset,
+        required String label,
+        required bool isLoading,
+        required VoidCallback onTap,
+        Color? color,
+      }) =>
       ElevatedButton.icon(
         icon: isLoading
             ? const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-              )
+          width: 16,
+          height: 16,
+          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+        )
             : Image.asset(asset, width: 24, height: 24),
         label: Text(label),
         style: ElevatedButton.styleFrom(backgroundColor: color),
@@ -368,11 +374,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     if (user != null && name.isNotEmpty) {
       await user.updateDisplayName(name);
       await ref.read(userProfileRepositoryProvider).createUserProfile(
-            uid: user.uid,
-            email: user.email!,
-            displayName: name,
-            favoriteGenres: selectedGenres,
-          );
+        uid: user.uid,
+        email: user.email!,
+        displayName: name,
+        favoriteGenres: selectedGenres,
+      );
       if (ctx.mounted) {
         ScaffoldMessenger.of(ctx)
             .showSnackBar(const SnackBar(content: Text('Profile updated')));
