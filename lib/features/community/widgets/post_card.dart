@@ -34,6 +34,8 @@ class PostCard extends ConsumerWidget {
       elevation: 2,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
+        splashColor: theme.colorScheme.primary.withOpacity(0.2),
+        highlightColor: Colors.transparent,
         onTap: () => context.pushNamed(
           'postDetails',
           pathParameters: {'postId': post.id},
@@ -95,14 +97,14 @@ class PostCard extends ConsumerWidget {
 
               const SizedBox(height: 12),
 
-              // Book citation
+              // Book citation pill (wood-brown container)
               if (post.bookCitation != null)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(8),
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceVariant,
+                    color: theme.colorScheme.primaryContainer,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -111,7 +113,7 @@ class PostCard extends ConsumerWidget {
                     style: GoogleFonts.merriweather(
                       textStyle: theme.textTheme.bodySmall,
                       fontStyle: FontStyle.italic,
-                      color: theme.colorScheme.onSurfaceVariant,
+                      color: theme.colorScheme.onPrimaryContainer,
                     ),
                   ),
                 ),
@@ -130,7 +132,7 @@ class PostCard extends ConsumerWidget {
               // Action row
               Row(
                 children: [
-                  // Like button (raw PNG, no tint)
+                  // Like button
                   IconButton(
                     iconSize: _iconSize,
                     icon: Image.asset(
@@ -152,7 +154,7 @@ class PostCard extends ConsumerWidget {
 
                   const SizedBox(width: 24),
 
-                  // Comment button (raw PNG, no tint)
+                  // Comment button
                   IconButton(
                     iconSize: _iconSize,
                     icon: Image.asset(
