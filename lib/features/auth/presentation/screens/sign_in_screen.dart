@@ -70,7 +70,15 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   obscureText: true,
                   validator: (value) => value!.isEmpty ? 'Please enter your password' : null,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => context.goNamed('reset-password'),
+                    child: const Text('Forgot Password?'),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: authState.isLoading ? null : _submit,
                   style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
