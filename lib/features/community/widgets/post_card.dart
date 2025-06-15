@@ -61,17 +61,21 @@ class PostCard extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(post.authorName,
-                            style: GoogleFonts.merriweather(
-                              textStyle: theme.textTheme.bodyLarge,
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.onSurface,
-                            )),
-                        Text(DateFormat.yMMMd().add_jm().format(post.createdAt),
-                            style: GoogleFonts.merriweather(
-                              textStyle: theme.textTheme.bodySmall,
-                              color: theme.colorScheme.onSurfaceVariant,
-                            )),
+                        Text(
+                          post.authorName,
+                          style: GoogleFonts.merriweather(
+                            textStyle: theme.textTheme.bodyLarge,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        Text(
+                          DateFormat.yMMMd().add_jm().format(post.createdAt),
+                          style: GoogleFonts.merriweather(
+                            textStyle: theme.textTheme.bodySmall,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -79,7 +83,7 @@ class PostCard extends ConsumerWidget {
                     IconButton(
                       iconSize: _iconSize,
                       icon: Image.asset(
-                        'lib/community/assets/delete.png',
+                        'lib/features/community/assets/delete.png',
                         width: _iconSize,
                         height: _iconSize,
                       ),
@@ -113,49 +117,48 @@ class PostCard extends ConsumerWidget {
                 ),
 
               // Post text
-              Text(post.text,
-                  style: GoogleFonts.merriweather(
-                    textStyle: theme.textTheme.bodyMedium,
-                    color: theme.colorScheme.onSurface,
-                  )),
+              Text(
+                post.text,
+                style: GoogleFonts.merriweather(
+                  textStyle: theme.textTheme.bodyMedium,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
 
               const SizedBox(height: 12),
 
               // Action row
               Row(
                 children: [
-                  // Like button
+                  // Like button (raw PNG, no tint)
                   IconButton(
                     iconSize: _iconSize,
                     icon: Image.asset(
-                      'lib/community/assets/like.png',
+                      'lib/features/community/assets/like.png',
                       width: _iconSize,
                       height: _iconSize,
-                      // tint if needed:
-                      color: isLiked
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.onSurfaceVariant,
                     ),
                     onPressed: () => ref
                         .read(communityControllerProvider.notifier)
                         .togglePostLike(post.id),
                   ),
-                  Text('${post.likedBy.length}',
-                      style: GoogleFonts.merriweather(
-                        textStyle: theme.textTheme.bodySmall,
-                        color: theme.colorScheme.onSurface,
-                      )),
+                  Text(
+                    '${post.likedBy.length}',
+                    style: GoogleFonts.merriweather(
+                      textStyle: theme.textTheme.bodySmall,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
 
                   const SizedBox(width: 24),
 
-                  // Comment button
+                  // Comment button (raw PNG, no tint)
                   IconButton(
                     iconSize: _iconSize,
                     icon: Image.asset(
-                      'lib/community/assets/comments.png',
+                      'lib/features/community/assets/comments.png',
                       width: _iconSize,
                       height: _iconSize,
-                      color: theme.colorScheme.onSurfaceVariant,
                     ),
                     onPressed: () => context.pushNamed(
                       'postDetails',
@@ -163,11 +166,13 @@ class PostCard extends ConsumerWidget {
                     ),
                   ),
                   commentsAsync.when(
-                    data: (comments) => Text('${comments.length}',
-                        style: GoogleFonts.merriweather(
-                          textStyle: theme.textTheme.bodySmall,
-                          color: theme.colorScheme.onSurface,
-                        )),
+                    data: (comments) => Text(
+                      '${comments.length}',
+                      style: GoogleFonts.merriweather(
+                        textStyle: theme.textTheme.bodySmall,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
                     loading: () => SizedBox(
                       width: 16,
                       height: 16,
@@ -176,11 +181,13 @@ class PostCard extends ConsumerWidget {
                         color: theme.colorScheme.primary,
                       ),
                     ),
-                    error: (_, __) => Text('0',
-                        style: GoogleFonts.merriweather(
-                          textStyle: theme.textTheme.bodySmall,
-                          color: theme.colorScheme.onSurfaceVariant,
-                        )),
+                    error: (_, __) => Text(
+                      '0',
+                      style: GoogleFonts.merriweather(
+                        textStyle: theme.textTheme.bodySmall,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                   ),
                 ],
               ),
